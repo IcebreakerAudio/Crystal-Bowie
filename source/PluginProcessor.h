@@ -81,11 +81,10 @@ private:
     enum SmootherID
     {
         IN_GAIN_SMOOTHER,
-        COMP_GAIN_SMOOTHER,
         OUT_GAIN_SMOOTHER
     };
 
-    const int numSmoothers = 3;
+    const int numSmoothers = 2;
     const double smoothingTimeMs = 20.0;
     std::vector<std::unique_ptr<juce::LinearSmoothedValue<float>>> floatGainSmoothers;
     std::vector<std::unique_ptr<juce::LinearSmoothedValue<double>>> doubleGainSmoothers;

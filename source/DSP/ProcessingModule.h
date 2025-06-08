@@ -34,6 +34,10 @@ public:
     void setThresholds(Type newNegativeThreshold, Type newPositiveThreshold);
     void setCrossoverFrequencies(double low, double high);
 
+    void setDrive(Type driveAmountDecibels);
+    void setMix(Type dryWetMixRatio);
+    void setPassBandLevel(Type levelInDecibels);
+
     int getLatency();
     bool isPrepared() { return prepared; }
 
@@ -60,8 +64,9 @@ private:
     //==============================================================================
 
     juce::LinearSmoothedValue<double> xOverFreqLowSm, xOverFreqHighSm;
-    juce::LinearSmoothedValue<Type> negThresholdSm, posThresholdSm;
-    Type negGainIn, negGainOut, posGainIn, posGainOut;
+    juce::LinearSmoothedValue<Type> negThresholdSm {one}, posThresholdSm {one};
+    juce::LinearSmoothedValue<Type> driveGainSm {one}, driveOutGainSm {one}, mixSm {one}, passbandGainSm {one};
+    Type negGainIn {one}, negGainOut {one}, posGainIn {one}, posGainOut {one}, driveGain {one}, driveOutGain {one}, mix {one}, passbandGain {one};
     int osIndex = 0, osFactor = 1;
     int negClipIndex = 0, posClipIndex = 0;
 

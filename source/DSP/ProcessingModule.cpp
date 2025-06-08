@@ -60,6 +60,11 @@ void ProcessingModule<Type>::processBlock(juce::dsp::AudioBlock<Type>& block)
         posGainOut = posThresholdSm.getNextValue();
         posGainIn = one / posGainOut;
 
+        driveGain = driveGainSm.getNextValue();
+        driveOutGain = driveOutGainSm.getNextValue();
+        passbandGain = passbandGainSm.getNextValue();
+        mix = mixSm.getNextValue();
+
         if(xOverFreqLowSm.isSmoothing()) {
             xOverFilterLow.setCutoffFrequency(xOverFreqLowSm.getNextValue());
         }
@@ -89,6 +94,9 @@ Type ProcessingModule<Type>::processSample(Type sample, int channel)
     xOverFilterLow.processCrossover(sample, low, mid, channel);
     xOverFilterHigh.processCrossover(mid, mid, high, channel);
 
+    auto cleanMid = mid;
+
+    mid *= driveGain;
     if(mid < zero)
     {
         mid *= negGainIn;
@@ -101,6 +109,11 @@ Type ProcessingModule<Type>::processSample(Type sample, int channel)
         mid = clippers[posClipIndex](mid);
         mid *= posGainOut;
     }
+    mid *= driveOutGain;
+
+    mid = cleanMid + ((mid - cleanMid) * mix);
+    low *= passbandGain + ((one - passbandGain) * mix);
+    high *= passbandGain + ((one - passbandGain) * mix);
 
     return low + mid + high;
 }
@@ -191,6 +204,28 @@ void ProcessingModule<Type>::setCrossoverFrequencies(double low, double high)
     xOverFreqHighSm.setTargetValue(high);
 }
 
+template<typename Type>
+void ProcessingModule<Type>::setDrive(Type driveAmountDecibels)
+{
+    auto gain = juce::Decibels::decibelsToGain(driveAmountDecibels);
+    auto gainComp = static_cast<Type>(1.0) / std::atan(gain);
+
+    driveGainSm.setTargetValue(gain);
+    driveOutGainSm.setTargetValue(gainComp);
+}
+
+template<typename Type>
+void ProcessingModule<Type>::setMix(Type dryWetMixRatio)
+{
+    mixSm.setTargetValue(dryWetMixRatio);
+}
+
+template<typename Type>
+void ProcessingModule<Type>::setPassBandLevel(Type levelInDecibels)
+{
+    passbandGainSm.setTargetValue(juce::Decibels::decibelsToGain(levelInDecibels));
+}
+
 //==============================================================================
 
 template<typename Type>
@@ -200,6 +235,10 @@ void ProcessingModule<Type>::resetSmoothers()
     xOverFreqHighSm.reset(sampleRate, smoothingTimeMs * 0.001);
     negThresholdSm.reset(sampleRate, smoothingTimeMs * 0.001);
     posThresholdSm.reset(sampleRate, smoothingTimeMs * 0.001);
+    passbandGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
+    driveGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
+    driveOutGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
+    mixSm.reset(sampleRate, smoothingTimeMs * 0.001);
 }
 
 //==============================================================================

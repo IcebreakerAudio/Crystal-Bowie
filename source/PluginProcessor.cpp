@@ -21,12 +21,15 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     apvts.addParameterListener("modeNeg", &clippingParamListener);
     apvts.addParameterListener("threshPos", &clippingParamListener);
     apvts.addParameterListener("threshNeg", &clippingParamListener);
+    apvts.addParameterListener("drive", &clippingParamListener);
     
     apvts.addParameterListener("active", &mainParamListener);
     apvts.addParameterListener("inGain", &mainParamListener);
     apvts.addParameterListener("outGain", &mainParamListener);
     apvts.addParameterListener("xOverLow", &mainParamListener);
     apvts.addParameterListener("xOverHigh", &mainParamListener);
+    apvts.addParameterListener("pbLevel", &mainParamListener);
+    apvts.addParameterListener("mix", &mainParamListener);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -45,8 +48,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
                 juce::ParameterID{ "inGain", 1 },
-                "Drive",
-                juce::NormalisableRange<float>(-12.0f, 48.0f, 0.01f, 1.5f),
+                "Input",
+                juce::NormalisableRange<float>(-60.0f, 12.0f, 0.01f, 1.5f),
                 0.0f,
                 juce::AudioParameterFloatAttributes().withLabel("dB")
                 ));
@@ -55,6 +58,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 juce::ParameterID{ "outGain", 1 },
                 "Output",
                 juce::NormalisableRange<float>(-60.0f, 12.0f, 0.01f, 1.5f),
+                0.0f,
+                juce::AudioParameterFloatAttributes().withLabel("dB")
+                ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+                juce::ParameterID{ "drive", 1 },
+                "Drive",
+                juce::NormalisableRange<float>(-12.0f, 48.0f, 0.01f, 1.5f),
                 0.0f,
                 juce::AudioParameterFloatAttributes().withLabel("dB")
                 ));
@@ -104,6 +115,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 freqRange,
                 5000.0f,
                 juce::AudioParameterFloatAttributes().withLabel("Hz")
+                ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+                juce::ParameterID{ "pbLevel", 1 },
+                "Pass Band Level",
+                juce::NormalisableRange<float>(-60.0f, 12.0f, 0.01f, 1.5f),
+                0.0f,
+                juce::AudioParameterFloatAttributes().withLabel("dB")
+                ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+                juce::ParameterID{ "mix", 1 },
+                "Mix",
+                juce::NormalisableRange<float>(0.0f, 100.0f),
+                100.0f,
+                juce::AudioParameterFloatAttributes().withLabel("%")
                 ));
 
     layout.add(std::make_unique<juce::AudioParameterChoice>(
@@ -208,7 +235,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     floatGainSmoothers[IN_GAIN_SMOOTHER]->applyGain(buffer, numSamples);
     floatProcessor->processBlock(block);
-    floatGainSmoothers[COMP_GAIN_SMOOTHER]->applyGain(buffer, numSamples);
     floatGainSmoothers[OUT_GAIN_SMOOTHER]->applyGain(buffer, numSamples);
 }
 
@@ -252,7 +278,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<double>& buffer,
 
     doubleGainSmoothers[IN_GAIN_SMOOTHER]->applyGain(buffer, numSamples);
     doubleProcessor->processBlock(block);
-    doubleGainSmoothers[COMP_GAIN_SMOOTHER]->applyGain(buffer, numSamples);
     doubleGainSmoothers[OUT_GAIN_SMOOTHER]->applyGain(buffer, numSamples);
 }
 
@@ -299,32 +324,35 @@ void AudioPluginAudioProcessor::updateOverSampling()
 void AudioPluginAudioProcessor::updateMainParameters()
 {
     auto inGain = juce::Decibels::decibelsToGain(loadRawParameterValue("inGain"));
-    auto gainComp = 1.0f / inGain;
     auto outGain = juce::Decibels::decibelsToGain(loadRawParameterValue("outGain"));
 
     if(floatGainSmoothers.size() == numSmoothers)
     {
         floatGainSmoothers[IN_GAIN_SMOOTHER]->setTargetValue(inGain);
-        floatGainSmoothers[COMP_GAIN_SMOOTHER]->setTargetValue(gainComp);
         floatGainSmoothers[OUT_GAIN_SMOOTHER]->setTargetValue(outGain);
     }
 
     if(doubleGainSmoothers.size() == numSmoothers)
     {
         doubleGainSmoothers[IN_GAIN_SMOOTHER]->setTargetValue(static_cast<double>(inGain));
-        doubleGainSmoothers[COMP_GAIN_SMOOTHER]->setTargetValue(static_cast<double>(gainComp));
         doubleGainSmoothers[OUT_GAIN_SMOOTHER]->setTargetValue(static_cast<double>(outGain));
     }
 
     auto lowFreq = static_cast<double>(loadRawParameterValue("xOverLow"));
     auto highFreq = static_cast<double>(loadRawParameterValue("xOverHigh"));
+    auto pbLevel = loadRawParameterValue("pbLevel");
+    auto mix = loadRawParameterValue("mix") * 0.001f;
 
     if(floatProcessor) {
         floatProcessor->setCrossoverFrequencies(lowFreq, highFreq);
+        floatProcessor->setPassBandLevel(pbLevel);
+        floatProcessor->setMix(mix);
     }
 
     if(doubleProcessor) {
         doubleProcessor->setCrossoverFrequencies(lowFreq, highFreq);
+        doubleProcessor->setPassBandLevel(static_cast<double>(pbLevel));
+        doubleProcessor->setMix(static_cast<double>(mix));
     }
 }
 
@@ -335,15 +363,19 @@ void AudioPluginAudioProcessor::updateClippingParameters()
 
     auto posThresh = loadRawParameterValue("threshPos");
     auto negThresh = loadRawParameterValue("threshNeg");
+    
+    auto drive = loadRawParameterValue("drive");
 
     if(floatProcessor) {
         floatProcessor->setClippingToUse(negIndex, posIndex);
         floatProcessor->setThresholds(negThresh, posThresh);
+        floatProcessor->setDrive(drive);
     }
 
     if(doubleProcessor) {
         doubleProcessor->setClippingToUse(negIndex, posIndex);
         doubleProcessor->setThresholds(negThresh, posThresh);
+        doubleProcessor->setDrive(drive);
     }
 }
 
