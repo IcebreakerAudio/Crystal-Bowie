@@ -66,12 +66,29 @@ private:
         return apvts.getRawParameterValue(parameterID)->load();
     }
 
-    ParameterListener mainParamListener, osParamListener;
+    ParameterListener mainParamListener, clippingParamListener, osParamListener;
 
     void updateMainParameters();
+    void updateClippingParameters();
     void updateOverSampling();
+    void updateAllParameters();
 
     //==============================================================================
+
+    std::unique_ptr<ProcessingModule<float>> floatProcessor;
+    std::unique_ptr<ProcessingModule<double>> doubleProcessor;
+
+    enum SmootherID
+    {
+        IN_GAIN_SMOOTHER,
+        COMP_GAIN_SMOOTHER,
+        OUT_GAIN_SMOOTHER
+    };
+
+    const int numSmoothers = 3;
+    const double smoothingTimeMs = 20.0;
+    std::vector<std::unique_ptr<juce::LinearSmoothedValue<float>>> floatGainSmoothers;
+    std::vector<std::unique_ptr<juce::LinearSmoothedValue<double>>> doubleGainSmoothers;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

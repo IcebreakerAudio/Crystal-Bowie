@@ -1,35 +1,39 @@
 #include "ProcessingModule.h"
 
 template<typename Type>
-void ProcessingModule<Type>::prepare(const int numChannels, const int expectedBufferSize)
+ProcessingModule<Type>::ProcessingModule()
 {
-    for(int i = 0; i < numOversamplers; ++i)
-    {
-        auto& os = overSamplers.emplace_back(numChannels);
-        if(i == 0) {
-            os.addDummyOversamplingStage();
-        }
-        else
-        {
-            os.addOversamplingStage(juce::dsp::Oversampling<double>::FilterType::filterHalfBandFIREquiripple, 0.05f, -90.0f, 0.06f, -75.0f);
-            for(int x = 1; x < i; ++x) {
-                os.addOversamplingStage(juce::dsp::Oversampling<double>::FilterType::filterHalfBandPolyphaseIIR, 0.1f, -70.0f, 0.12f, -60.0f);
-            }
-        }
-        os.setUsingIntegerLatency(true);
-        os.initProcessing(expectedBufferSize);
-    }
-
-    xOverFilterLow.setNumChannels(numChannels);
-    xOverFilterHigh.setNumChannels(numChannels);
-
     clippers.push_back(BasicClippers::hardClip<Type>);
     clippers.push_back([](Type x) -> Type { return std::tanh(x); });
     clippers.push_back([](Type x) -> Type { return std::atan(x); });
     clippers.push_back(BasicClippers::saturate<Type>);
-    clippers.push_back(BasicClippers::softClip<Type>);
+    clippers.push_back(BasicClippers::cubicSoftClip<Type>);
+    clippers.push_back([](Type x) -> Type { return BasicClippers::softClipWithFactor(x, static_cast<Type>(5.0)); });
     clippers.push_back(BasicClippers::polySoftClip<Type>);
-    clippers.push_back([](Type x) -> Type { return BasicClippers::cubicSoftClip(x, static_cast<Type>(3.0)); });
+}
+
+template<typename Type>
+void ProcessingModule<Type>::prepare(const int numChannels, const int expectedBufferSize)
+{
+    for(int i = 0; i < numOversamplers; ++i)
+    {
+        auto& os = overSamplers.emplace_back(std::make_unique<juce::dsp::Oversampling<Type>>(numChannels));
+        if(i == 0) {
+            os->addDummyOversamplingStage();
+        }
+        else
+        {
+            os->addOversamplingStage(juce::dsp::Oversampling<Type>::FilterType::filterHalfBandFIREquiripple, 0.05f, -90.0f, 0.06f, -75.0f);
+            for(int x = 1; x < i; ++x) {
+                os->addOversamplingStage(juce::dsp::Oversampling<Type>::FilterType::filterHalfBandPolyphaseIIR, 0.1f, -70.0f, 0.12f, -60.0f);
+            }
+        }
+        os->setUsingIntegerLatency(true);
+        os->initProcessing(expectedBufferSize);
+    }
+
+    xOverFilterLow.setNumChannels(numChannels);
+    xOverFilterHigh.setNumChannels(numChannels);
 
     prepared = true;
 }
@@ -45,7 +49,7 @@ void ProcessingModule<Type>::processBlock(juce::dsp::AudioBlock<Type>& block)
     const auto numChannels = block.getNumChannels();
     const auto numSamples = block.getNumSamples();
 
-    auto osBlock = overSamplers[osIndex].processSamplesUp(block);
+    auto osBlock = overSamplers[osIndex]->processSamplesUp(block);
     jassert(osFactor * numSamples == osBlock.getNumSamples());
 
     for(int s = 0; s < numSamples; ++s)
@@ -66,14 +70,14 @@ void ProcessingModule<Type>::processBlock(juce::dsp::AudioBlock<Type>& block)
 
         for(int c = 0; c < numChannels; ++c)
         {
-            auto* data = block.getChannelPointer(c);
+            auto* data = osBlock.getChannelPointer(c);
             for(int i = 0; i < osFactor; ++i) {
-                data[i] = processSample(data[i], c);
+                data[(s * osFactor) + i] = processSample(data[(s * osFactor) + i], c);
             }
         }
     }
 
-    overSamplers[osIndex].processSamplesDown(block);
+    overSamplers[osIndex]->processSamplesDown(block);
 }
 
 template<typename Type>
@@ -82,8 +86,8 @@ Type ProcessingModule<Type>::processSample(Type sample, int channel)
     Type low, mid, high;
     low = mid = high = zero;
 
-    xOverFilterLow.processCrossover(sample, low, mid);
-    xOverFilterHigh.processCrossover(mid, mid, high);
+    xOverFilterLow.processCrossover(sample, low, mid, channel);
+    xOverFilterHigh.processCrossover(mid, mid, high, channel);
 
     if(mid < zero)
     {
@@ -143,8 +147,8 @@ void ProcessingModule<Type>::setOverSampleIndex(int newIndex)
         return;
     }
 
-    overSamplers[osIndex].reset();
-    osFactor = overSamplers[osIndex].getOversamplingFactor();
+    overSamplers[osIndex]->reset();
+    osFactor = static_cast<int>(overSamplers[osIndex]->getOversamplingFactor());
     updateFilterSampleRate();
 }
 
@@ -153,16 +157,16 @@ int ProcessingModule<Type>::getLatency()
 {
     jassert(prepared);
     if(!prepared) {
-        return;
+        return 0;
     }
 
-    return static_cast<int>(overSamplers[osIndex].getLatencyInSamples());
+    return static_cast<int>(overSamplers[osIndex]->getLatencyInSamples());
 }
 
 //==============================================================================
 
 template<typename Type>
-void ProcessingModule<Type>::setClippingToUse(int positiveIndex, int negativeIndex)
+void ProcessingModule<Type>::setClippingToUse(int negativeIndex, int positiveIndex)
 {
     jassert(juce::isPositiveAndBelow(positiveIndex, clippers.size()));
     jassert(juce::isPositiveAndBelow(negativeIndex, clippers.size()));
@@ -197,3 +201,8 @@ void ProcessingModule<Type>::resetSmoothers()
     negThresholdSm.reset(sampleRate, smoothingTimeMs * 0.001);
     posThresholdSm.reset(sampleRate, smoothingTimeMs * 0.001);
 }
+
+//==============================================================================
+
+template class ProcessingModule<float>;
+template class ProcessingModule<double>;

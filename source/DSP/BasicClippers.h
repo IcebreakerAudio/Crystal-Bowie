@@ -37,21 +37,21 @@ namespace BasicClippers
     }
 
     template<typename Type>
-    Type softClip(Type input)
+    Type cubicSoftClip(Type input)
     {
         input = hardClipToThreshold(input, std::numbers::sqrt2_v<Type>);
         return input - (inv6<Type> * input * input * input);
     }
 
     template<typename Type>
-    Type cubicSoftClip(Type input, Type factor)
+    Type softClipWithFactor(Type input, Type factor)
     {
-        if (factor < 2.0) factor = 2.0;
+        if (factor < static_cast<Type>(2.0)) factor = static_cast<Type>(2.0);
 
-        auto sign = (input < 0.0) ? -1.0 : 1.0;
+        auto sign = (input < static_cast<Type>(0.0)) ? static_cast<Type>(-1.0) : static_cast<Type>(1.0);
         input = abs(input);
-        if (input >= 1.0)
-            input = (factor - 1.0) / factor;
+        if (input >= static_cast<Type>(1.0))
+            input = (factor - static_cast<Type>(1.0)) / factor;
         else
             input = input - (pow(input, factor) / factor);
 
@@ -61,14 +61,14 @@ namespace BasicClippers
     template<typename Type>
     Type polySoftClip(Type input)
     {
-        if(input > 1.875)
-            return 1.0;
-        else if (input < -1.875)
-            return -1.0;
+        if(input > static_cast<Type>(1.875))
+            return static_cast<Type>(1.0);
+        else if (input < static_cast<Type>(-1.875))
+            return static_cast<Type>(-1.0);
         else
         {
-            auto a = pow(input, 3.0) * -0.18963;
-            auto b = pow(input, 5.0) * 0.0161817;
+            auto a = pow(input, static_cast<Type>(3.0)) * static_cast<Type>(-0.18963);
+            auto b = pow(input, static_cast<Type>(5.0)) * static_cast<Type>(0.0161817);
             return a + b + input;
         }
     }

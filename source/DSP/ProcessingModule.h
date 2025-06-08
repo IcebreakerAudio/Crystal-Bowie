@@ -4,16 +4,33 @@
 #include <juce_dsp/juce_dsp.h>
 #include <juce_audio_basics/juce_audio_basics.h>
 
+namespace Clipper
+{
+    const juce::StringArray Names
+    {
+        "Hard Clip",
+        "TanH",
+        "Atan",
+        "1 / (1+|x|)",
+        "x - (x^3 / 3)",
+        "x - (x^5 / 5)",
+        "Poly Soft Clip"
+    };
+};
+
 template<typename Type>
 class ProcessingModule
 {
 public:
 
+    ProcessingModule();
+    ~ProcessingModule() = default;
+
     void prepare(const int numChannels, const int expectedBufferSize);
     void setSampleRate(double newSampleRate);
 
     void setOverSampleIndex(int newIndex);
-    void setClippingToUse(int positiveIndex, int negativeIndex);
+    void setClippingToUse(int negativeIndex, int positiveIndex);
     void setThresholds(Type newNegativeThreshold, Type newPositiveThreshold);
     void setCrossoverFrequencies(double low, double high);
 
@@ -34,7 +51,7 @@ private:
 
     //==============================================================================
 
-    std::vector<juce::dsp::Oversampling<Type>> overSamplers;
+    std::vector<std::unique_ptr<juce::dsp::Oversampling<Type>>> overSamplers;
     CrossoverFilter<Type> xOverFilterLow, xOverFilterHigh;
     std::vector<std::function<Type(Type)>> clippers;
 
