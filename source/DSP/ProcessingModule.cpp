@@ -112,8 +112,8 @@ Type ProcessingModule<Type>::processSample(Type sample, int channel)
     mid *= driveOutGain;
 
     mid = cleanMid + ((mid - cleanMid) * mix);
-    low *= passbandGain + ((one - passbandGain) * mix);
-    high *= passbandGain + ((one - passbandGain) * mix);
+    low *= one + ((passbandGain - one) * mix);
+    high *= one + ((passbandGain - one) * mix);
 
     return low + mid + high;
 }

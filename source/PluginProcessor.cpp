@@ -341,7 +341,7 @@ void AudioPluginAudioProcessor::updateMainParameters()
     auto lowFreq = static_cast<double>(loadRawParameterValue("xOverLow"));
     auto highFreq = static_cast<double>(loadRawParameterValue("xOverHigh"));
     auto pbLevel = loadRawParameterValue("pbLevel");
-    auto mix = loadRawParameterValue("mix") * 0.001f;
+    auto mix = loadRawParameterValue("mix") * 0.01f;
 
     if(floatProcessor) {
         floatProcessor->setCrossoverFrequencies(lowFreq, highFreq);
