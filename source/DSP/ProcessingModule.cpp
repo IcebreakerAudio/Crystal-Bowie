@@ -7,9 +7,11 @@ ProcessingModule<Type>::ProcessingModule()
     clippers.push_back([](Type x) -> Type { return std::tanh(x); });
     clippers.push_back([](Type x) -> Type { return std::atan(x); });
     clippers.push_back(BasicClippers::saturate<Type>);
+    clippers.push_back(BasicClippers::saturateRootSquared<Type>);
     clippers.push_back(BasicClippers::cubicSoftClip<Type>);
     clippers.push_back([](Type x) -> Type { return BasicClippers::softClipWithFactor(x, static_cast<Type>(5.0)); });
     clippers.push_back(BasicClippers::polySoftClip<Type>);
+    clippers.push_back(BasicClippers::ripple<Type>);
 }
 
 template<typename Type>
@@ -208,7 +210,16 @@ template<typename Type>
 void ProcessingModule<Type>::setDrive(Type driveAmountDecibels)
 {
     auto gain = juce::Decibels::decibelsToGain(driveAmountDecibels);
-    auto gainComp = static_cast<Type>(1.0) / std::atan(gain);
+    auto gainComp = one;
+    if(gain >= one) {
+        gainComp = one / std::log(gain * std::numbers::e_v<Type>);
+    }
+    else {
+        gainComp = one / gain;
+    }
+
+    DBG(gain);
+    DBG(gainComp);
 
     driveGainSm.setTargetValue(gain);
     driveOutGainSm.setTargetValue(gainComp);

@@ -11,10 +11,12 @@ namespace Clipper
         "Hard Clip",
         "TanH",
         "Atan",
-        "1 / (1+|x|)",
+        "x / (1 + |x|)",
+        "x / sqrt(1 + x^2)",
         "x - (x^3 / 3)",
         "x - (x^5 / 5)",
-        "Poly Soft Clip"
+        "Poly Soft Clip",
+        "Ripple"
     };
 };
 

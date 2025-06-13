@@ -33,7 +33,13 @@ namespace BasicClippers
     template<typename Type>
     Type saturate(Type input)
     {
-        return input *= static_cast<Type>(1.0) / (abs(input) + static_cast<Type>(1.0));
+        return input /= (abs(input) + static_cast<Type>(1.0));
+    }
+
+    template<typename Type>
+    Type saturateRootSquared(Type input)
+    {
+        return input /= std::sqrt((input * input) + static_cast<Type>(1.0));
     }
 
     template<typename Type>
@@ -71,5 +77,21 @@ namespace BasicClippers
             auto b = pow(input, static_cast<Type>(5.0)) * static_cast<Type>(0.0161817);
             return a + b + input;
         }
+    }
+
+    template<typename Type>
+    Type ripple(Type input)
+    {
+        auto rect = std::abs(input);
+        auto sine = std::sin(input * std::numbers::pi_v<Type> * static_cast<Type>(0.5));
+        if(rect > static_cast<Type>(1.0))
+        {
+            sine /= input;
+            sine += std::log10(rect);
+            if(input < static_cast<Type>(0.0)) {
+                sine *= static_cast<Type>(-1.0);
+            }
+        }
+        return sine;
     }
 }
