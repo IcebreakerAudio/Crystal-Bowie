@@ -8,13 +8,16 @@ namespace BasicClippers
     template <typename Type>
     constexpr Type inv6 = static_cast<Type>(1.0 / 6.0);
 
+    template <typename Type>
+    constexpr Type one = static_cast<Type>(1.0);
+
     template<typename Type>
     Type hardClip(Type input)
     {
         if(input < static_cast<Type>(-1.0))
             return static_cast<Type>(-1.0);
-        else if(input > static_cast<Type>(1.0))
-            return static_cast<Type>(1.0);
+        else if(input > one<Type>)
+            return one<Type>;
         else
             return input;
     }
@@ -33,13 +36,13 @@ namespace BasicClippers
     template<typename Type>
     Type saturate(Type input)
     {
-        return input /= (abs(input) + static_cast<Type>(1.0));
+        return input /= (abs(input) + one<Type>);
     }
 
     template<typename Type>
     Type saturateRootSquared(Type input)
     {
-        return input /= std::sqrt((input * input) + static_cast<Type>(1.0));
+        return input /= std::sqrt((input * input) + one<Type>);
     }
 
     template<typename Type>
@@ -54,10 +57,10 @@ namespace BasicClippers
     {
         if (factor < static_cast<Type>(2.0)) factor = static_cast<Type>(2.0);
 
-        auto sign = (input < static_cast<Type>(0.0)) ? static_cast<Type>(-1.0) : static_cast<Type>(1.0);
+        auto sign = (input < static_cast<Type>(0.0)) ? static_cast<Type>(-1.0) : one<Type>;
         input = abs(input);
-        if (input >= static_cast<Type>(1.0))
-            input = (factor - static_cast<Type>(1.0)) / factor;
+        if (input >= one<Type>)
+            input = (factor - one<Type>) / factor;
         else
             input = input - (pow(input, factor) / factor);
 
@@ -67,10 +70,12 @@ namespace BasicClippers
     template<typename Type>
     Type polySoftClip(Type input)
     {
-        if(input > static_cast<Type>(1.875))
-            return static_cast<Type>(1.0);
-        else if (input < static_cast<Type>(-1.875))
+        if(input > static_cast<Type>(1.875)) {
+            return one<Type>;
+        }
+        else if (input < static_cast<Type>(-1.875)) {
             return static_cast<Type>(-1.0);
+        }
         else
         {
             auto a = pow(input, static_cast<Type>(3.0)) * static_cast<Type>(-0.18963);
@@ -84,7 +89,7 @@ namespace BasicClippers
     {
         auto rect = std::abs(input);
         auto sine = std::sin(input * std::numbers::pi_v<Type> * static_cast<Type>(0.5));
-        if(rect > static_cast<Type>(1.0))
+        if(rect > one<Type>)
         {
             sine /= input;
             sine += std::log10(rect);

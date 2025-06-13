@@ -9,7 +9,6 @@ ProcessingModule<Type>::ProcessingModule()
     clippers.push_back(BasicClippers::saturate<Type>);
     clippers.push_back(BasicClippers::saturateRootSquared<Type>);
     clippers.push_back(BasicClippers::cubicSoftClip<Type>);
-    clippers.push_back([](Type x) -> Type { return BasicClippers::softClipWithFactor(x, static_cast<Type>(5.0)); });
     clippers.push_back(BasicClippers::polySoftClip<Type>);
     clippers.push_back(BasicClippers::ripple<Type>);
 }
