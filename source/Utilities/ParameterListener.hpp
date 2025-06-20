@@ -17,13 +17,11 @@ public:
         parametersChanged.store(true);
     }
 
-    bool checkForChanges()
-    {
+    bool checkForChanges() {
         return parametersChanged.exchange(false);
     }
 
-    void reset(bool resetState)
-    {
+    void reset(bool resetState) {
         parametersChanged.store(resetState);
     }
 

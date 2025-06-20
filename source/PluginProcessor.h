@@ -2,8 +2,9 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
-#include "DSP/ProcessingModule.h"
-#include "Utilities/ParameterListener.h"
+#include "DSP/ProcessingModule.hpp"
+#include "Utilities/ParameterListener.hpp"
+#include "Utilities/SpectrumAnalyser.hpp"
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
@@ -56,6 +57,9 @@ public:
         juce::ignoreUnused (index);
         return {};
     }
+
+    //==============================================================================
+    SpectrumAnalyser spectrumProcessor { 10, true };
 
 private:
 

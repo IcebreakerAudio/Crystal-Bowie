@@ -132,6 +132,11 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     floatProcessor.reset();
     doubleProcessor.reset();
 
+    spectrumProcessor.prepare(juce::roundToInt(sampleRate), sampleRate);
+    spectrumProcessor.setRange(20.0f, 19500.0f, 200);
+    spectrumProcessor.setLineSmoothing(9);
+    spectrumProcessor.setDecayTime(1500.0f);
+
     if(isUsingDoublePrecision())
     {
         DBG("is Double");
@@ -161,6 +166,13 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 {
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
      && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
+
+    if (layouts.getMainInputChannelSet() != juce::AudioChannelSet::mono()
+     && layouts.getMainInputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
+
+    if (layouts.getMainInputChannels() > layouts.getMainOutputChannels())
         return false;
 
     return true;
@@ -198,10 +210,17 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     auto numSamples = buffer.getNumSamples();
 
+    spectrumProcessor.addAudioData(buffer, totalNumInputChannels);
+
     auto block = juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(0, totalNumInputChannels);
 
     floatProcessor->processBlock(block);
     floatGainSmoother.applyGain(buffer, numSamples);
+
+    if(totalNumOutputChannels > totalNumInputChannels)
+    {
+        buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
+    }
 }
 
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<double>& buffer,
@@ -240,6 +259,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<double>& buffer,
 
     doubleProcessor->processBlock(block);
     doubleGainSmoother.applyGain(buffer, numSamples);
+
+    if(totalNumOutputChannels > totalNumInputChannels)
+    {
+        buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
+    }
 }
 
 //==============================================================================
@@ -250,8 +274,8 @@ bool AudioPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
-    // return new AudioPluginAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new AudioPluginAudioProcessorEditor (*this);
+    // return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -284,15 +308,22 @@ void AudioPluginAudioProcessor::updateOverSampling()
 
 void AudioPluginAudioProcessor::updateMainParameters()
 {
-    auto outGain = juce::Decibels::decibelsToGain(loadRawParameterValue("outGain"));
+    auto active = loadRawParameterValue("active") > 0.5f;
 
-    floatGainSmoother.setTargetValue(outGain);
-    doubleGainSmoother.setTargetValue(static_cast<double>(outGain));
+    auto outGain = juce::Decibels::decibelsToGain(loadRawParameterValue("outGain"));
 
     auto lowFreq = static_cast<double>(loadRawParameterValue("xOverLow"));
     auto highFreq = static_cast<double>(loadRawParameterValue("xOverHigh"));
     auto pbLevel = loadRawParameterValue("pbLevel");
     auto mix = loadRawParameterValue("mix") * 0.01f;
+
+    if(!active) {
+        outGain = 1.0f;
+        mix = 0.0f;
+    }
+
+    floatGainSmoother.setTargetValue(outGain);
+    doubleGainSmoother.setTargetValue(static_cast<double>(outGain));
 
     if(floatProcessor) {
         floatProcessor->setCrossoverFrequencies(lowFreq, highFreq);
@@ -312,7 +343,7 @@ void AudioPluginAudioProcessor::updateClippingParameters()
     auto posIndex = juce::roundToInt(loadRawParameterValue("modePos"));
     auto negIndex = juce::roundToInt(loadRawParameterValue("modeNeg"));
 
-    auto symmetry = loadRawParameterValue("sym") * 0.01f;
+    auto symmetry = loadRawParameterValue("sym") * 0.009f;
     auto negThresh = -1.0f;
     auto posThresh = 1.0f;
 

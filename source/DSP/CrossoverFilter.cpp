@@ -1,4 +1,4 @@
-#include "CrossoverFilter.h"
+#include "CrossoverFilter.hpp"
 
 template<typename Type>
 CrossoverFilter<Type>::CrossoverFilter()
@@ -68,13 +68,13 @@ template<typename Type>
 void CrossoverFilter<Type>::updateCoefficients()
 {
     auto w = std::tan(static_cast<Type>(cutoff) * invSampleRate * std::numbers::pi_v<Type>);
-    g = w / (w + 1.0);
+    g = w / (w + static_cast<Type>(1.0));
 }
 
 template<typename Type>
 void CrossoverFilter<Type>::snapToZero()
 {
-    auto zero = static_cast<Type>(0.0);
+    return;
     // to do: snap to zero
 }
 

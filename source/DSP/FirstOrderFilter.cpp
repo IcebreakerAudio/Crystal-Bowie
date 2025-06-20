@@ -1,4 +1,4 @@
-#include "FirstOrderFilter.h"
+#include "FirstOrderFilter.hpp"
 
 template<typename Type>
 FirstOrderFilter<Type>::FirstOrderFilter()
