@@ -1,8 +1,8 @@
 #pragma once
-#include "BasicClippers.hpp"
-#include "CrossoverFilter.hpp"
 #include <juce_dsp/juce_dsp.h>
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <IA_Waveshaping/BasicClippers.hpp>
+#include <IA_Filters/CrossoverFilter.hpp>
 
 namespace Clipper
 {
@@ -57,7 +57,7 @@ private:
     //==============================================================================
 
     std::vector<std::unique_ptr<juce::dsp::Oversampling<Type>>> overSamplers;
-    CrossoverFilter<Type> xOverFilterLow, xOverFilterHigh;
+    IADSP::CrossoverFilter<Type> xOverFilterLow, xOverFilterHigh;
     std::vector<std::function<Type(Type)>> clippers;
 
     Type processSample(Type sample, int channel = 0);

@@ -1,11 +1,14 @@
 
 #pragma once
+
 #include <juce_dsp/juce_dsp.h>
 #include <juce_gui_basics/juce_gui_basics.h>
+
 #include <mutex>
 #include <condition_variable>
-#include "FiFo.hpp"
-#include "ResamplingFilter.hpp"
+
+#include <IA_Utilities/FiFo.hpp>
+#include <IA_Utilities/ResamplingFilter.hpp>
 
 //==============================================================================
 /*

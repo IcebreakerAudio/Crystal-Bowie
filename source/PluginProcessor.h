@@ -2,8 +2,8 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
-#include "DSP/ProcessingModule.hpp"
-#include "Utilities/ParameterListener.hpp"
+#include <IA_Utilities/ParameterListener.hpp>
+#include "ProcessingModule.hpp"
 #include "Utilities/SpectrumAnalyser.hpp"
 
 //==============================================================================

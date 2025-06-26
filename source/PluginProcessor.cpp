@@ -80,8 +80,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 juce::AudioParameterFloatAttributes()
                 ));
 
-    auto freqRange = juce::NormalisableRange<float>(20.0f, 15000.0f);
-    freqRange.setSkewForCentre(1000.0f);
+    auto freqRange = juce::NormalisableRange<float>(20.0f, 19500.0f,
+        [](float currentRangeStart, float currentRangeEnd, float normalisedValue)
+        {
+            // convert from 0 to 1
+            auto factor = std::log(currentRangeEnd / currentRangeStart);
+            return std::exp(normalisedValue * factor) * currentRangeStart;
+        },
+        [](float currentRangeStart, float currentRangeEnd, float value)
+        {
+            // convert to 0 to 1
+            auto factor = std::log(currentRangeEnd / currentRangeStart);
+            return std::log(value / currentRangeStart) / factor;
+        },
+        {}
+    );
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
                 juce::ParameterID{ "xOverLow", 1 },
