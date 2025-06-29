@@ -191,13 +191,15 @@ void SpectrumAnalyser::createLinePath (juce::Path& p, const juce::Rectangle<floa
 
     applyPathSmoothing(outputData, smoothedData);
 
-    p.startNewSubPath(0.0, juce::jmap(juce::Decibels::gainToDecibels(smoothedData[0]), -72.0f, 0.0f, bounds.getBottom(), bounds.getY()));
+    auto oX = bounds.getX();
+    auto oY = bounds.getY();
+    p.startNewSubPath(oX, oY + juce::jmap(juce::Decibels::gainToDecibels(smoothedData[0]), -72.0f, 0.0f, bounds.getBottom(), bounds.getY()));
 
     for(int i = 1; i < smoothedData.size(); ++i)
     {
         auto xPos = i * width / size;
         auto yPos = juce::jmap (juce::Decibels::gainToDecibels(smoothedData[i]), -72.0f, 0.0f, bounds.getBottom(), bounds.getY());
-        p.lineTo(xPos, yPos);
+        p.lineTo(oX + xPos, oY + yPos);
     }
 
     std::transform(outputData.begin(), outputData.end(), outputData.begin(),

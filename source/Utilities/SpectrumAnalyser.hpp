@@ -62,7 +62,7 @@ private:
             return -1.0f;
         }
 
-        return freq * float(fftSize) / (internalSampleRate * 0.5);
+        return freq * float(fftSize) / float(internalSampleRate * 0.5);
     }
 
     void generateSmoothingWeights(int n)

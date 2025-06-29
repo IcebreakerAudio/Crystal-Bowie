@@ -53,6 +53,8 @@ void ProcessingModule<Type>::processBlock(juce::dsp::AudioBlock<Type>& block)
     auto osBlock = overSamplers[osIndex]->processSamplesUp(block);
     jassert(osFactor * numSamples == osBlock.getNumSamples());
 
+    maxIn = minIn = zero;
+
     for(int s = 0; s < numSamples; ++s)
     {
         negGainOut = negThresholdSm.getNextValue();
@@ -98,7 +100,15 @@ Type ProcessingModule<Type>::processSample(Type sample, int channel)
 
     auto cleanMid = mid;
 
+    if(mid < minIn) {
+        minIn = mid;
+    }
+    else if(mid > maxIn) {
+        maxIn = mid;
+    }
+
     mid *= driveGain;
+
     if(mid < zero)
     {
         mid *= negGainIn;
@@ -250,6 +260,74 @@ void ProcessingModule<Type>::resetSmoothers()
     driveHighGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
     driveOutGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
     mixSm.reset(sampleRate, smoothingTimeMs * 0.001);
+}
+
+//==============================================================================
+
+template<typename Type>
+void ProcessingModule<Type>::drawPath(juce::Path& p, juce::Rectangle<float> bounds, float scale)
+{
+    const auto xO = bounds.getX();
+    const auto yO = bounds.getY();
+    const auto width = bounds.getWidth();
+    const auto height = bounds.getHeight();
+    const auto numPoints = juce::roundToInt(height);
+    
+    negGainOut = negThresholdSm.getTargetValue();
+    negGainIn = one / negGainOut;
+
+    posGainOut = posThresholdSm.getTargetValue();
+    posGainIn = one / posGainOut;
+
+    driveGain = driveGainSm.getTargetValue();
+    driveOutGain = driveOutGainSm.getTargetValue();
+
+    p.clear();
+    p.preallocateSpace((numPoints * 3) + 8);
+
+    for(int i = 0; i < numPoints; ++i)
+    {
+        auto x = float(i) * width / float(numPoints);
+        auto value = (x * 2.0f / width) - 1.0f;
+        if(value < 0.0f) {
+            value *= -value;
+        }
+        else {
+            value *= value;
+        }
+
+        value *= scale;
+        value *= driveGain;
+        if(value < zero)
+        {
+            value *= negGainIn;
+            value = clippers[negClipIndex](value);
+            value *= negGainOut;
+            value = std::sqrt(std::abs(value)) * -1.0f;
+        }
+        else
+        {
+            value *= posGainIn;
+            value = clippers[posClipIndex](value);
+            value *= posGainOut;
+            value = std::sqrt(value);
+        }
+        // value *= driveOutGain;
+
+        auto y = juce::jmap(value, -scale, scale, height, 0.0f);
+
+        x += xO;
+        y += yO;
+
+        if(i == 0) {
+            p.startNewSubPath(x, y);
+        }
+        else {
+            p.lineTo(x, y);
+        }
+    }
+
+    resetSmoothers();
 }
 
 //==============================================================================

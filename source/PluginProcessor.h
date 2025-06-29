@@ -61,6 +61,9 @@ public:
     //==============================================================================
     SpectrumAnalyser spectrumProcessor { 10, true };
 
+    float getMin() { return min.load(); }
+    float getMax() { return max.load(); }
+
 private:
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
@@ -85,6 +88,10 @@ private:
     const double smoothingTimeMs = 20.0;
     juce::LinearSmoothedValue<float> floatGainSmoother {1.0f};
     juce::LinearSmoothedValue<double> doubleGainSmoother {1.0};
+
+    //==============================================================================
+
+    std::atomic<float> min {0.0f}, max {0.0f};
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

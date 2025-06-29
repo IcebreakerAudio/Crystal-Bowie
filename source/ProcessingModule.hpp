@@ -1,6 +1,7 @@
 #pragma once
 #include <juce_dsp/juce_dsp.h>
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <juce_gui_basics/juce_gui_basics.h>
 #include <IA_Waveshaping/BasicClippers.hpp>
 #include <IA_Filters/CrossoverFilter.hpp>
 
@@ -44,6 +45,14 @@ public:
 
     void processBlock(juce::dsp::AudioBlock<Type>& block);
 
+    Type getMin()  { return minIn; }
+    Type getMax()  { return maxIn; }
+
+    //==============================================================================
+
+    // for UI use. Do not use with an instance that is also processing realtime audio
+    void drawPath(juce::Path& p, juce::Rectangle<float> bounds, float scale = 1.2f);
+
 private:
 
     //==============================================================================
@@ -79,4 +88,8 @@ private:
     void updateFilterSampleRate();
 
     bool prepared = false;
+
+    //==============================================================================
+
+    Type maxIn {zero}, minIn {zero};
 };

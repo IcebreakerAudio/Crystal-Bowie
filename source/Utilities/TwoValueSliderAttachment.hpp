@@ -7,7 +7,7 @@ class TwoValueSliderAttachment : private juce::Slider::Listener
 {
 public:
 
-    TwoValueSliderAttachment(juce::Slider& s, juce::RangedAudioParameter& min, juce::RangedAudioParameter& max, juce::UndoManager* um);
+    TwoValueSliderAttachment(juce::Slider& s, juce::RangedAudioParameter& min, juce::RangedAudioParameter& max, juce::UndoManager* um = nullptr);
     ~TwoValueSliderAttachment();
 
 private:
@@ -22,5 +22,7 @@ private:
     juce::ParameterAttachment minAttachment, maxAttachment;
 
     bool ignoreCallbacks = false;
+
+    int thumbBeingDragged = -1;
 };
 

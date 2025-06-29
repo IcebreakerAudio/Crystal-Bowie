@@ -230,6 +230,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     floatProcessor->processBlock(block);
     floatGainSmoother.applyGain(buffer, numSamples);
 
+    min.store(floatProcessor->getMin());
+    max.store(floatProcessor->getMax());
+
     if(totalNumOutputChannels > totalNumInputChannels)
     {
         buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
@@ -272,6 +275,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<double>& buffer,
 
     doubleProcessor->processBlock(block);
     doubleGainSmoother.applyGain(buffer, numSamples);
+
+    min.store(static_cast<float>(doubleProcessor->getMin()));
+    max.store(static_cast<float>(doubleProcessor->getMax()));
 
     if(totalNumOutputChannels > totalNumInputChannels)
     {
@@ -388,3 +394,4 @@ void AudioPluginAudioProcessor::updateAllParameters()
     updateClippingParameters();
     updateMainParameters();
 }
+

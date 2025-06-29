@@ -15,30 +15,32 @@ void TwoValueSliderAttachment::setMaxValue (float newValue)
     
 void TwoValueSliderAttachment::sliderValueChanged(juce::Slider* s)
 {
-    if (s->getThumbBeingDragged() == 1) {
+    thumbBeingDragged = s->getThumbBeingDragged();
+    if (thumbBeingDragged == 1) {
         minAttachment.setValueAsPartOfGesture (s->getMinValue());
     }
-    else if (s->getThumbBeingDragged() == 2) {
+    else if (thumbBeingDragged == 2) {
         maxAttachment.setValueAsPartOfGesture (s->getMaxValue());
     }
 }
 
 void TwoValueSliderAttachment::sliderDragStarted(juce::Slider* s)
 {
-    if (s->getThumbBeingDragged() == 1) {
+    thumbBeingDragged = s->getThumbBeingDragged();
+    if (thumbBeingDragged == 1) {
         minAttachment.beginGesture();
     }
-    else if (s->getThumbBeingDragged() == 2) {
+    else if (thumbBeingDragged == 2) {
         maxAttachment.beginGesture();
     }
 }
 
 void TwoValueSliderAttachment::sliderDragEnded(juce::Slider* s)
 {
-    if (s->getThumbBeingDragged() == 1) {
+    if (thumbBeingDragged == 1) {
         minAttachment.endGesture();
     }
-    else if (s->getThumbBeingDragged() == 2) {
+    else if (thumbBeingDragged == 2) {
         maxAttachment.endGesture();
     }
 }
@@ -50,7 +52,7 @@ TwoValueSliderAttachment::TwoValueSliderAttachment(juce::Slider& s, juce::Ranged
 {
     slider.valueFromTextFunction = [&min] (const juce::String& text) { return (double) min.convertFrom0to1 (min.getValueForText (text)); };
     slider.textFromValueFunction = [&min] (double value) { return min.getText (min.convertTo0to1 ((float) value), 0); };
-    slider.setDoubleClickReturnValue (true, min.convertFrom0to1 (min.getDefaultValue()));
+    //slider.setDoubleClickReturnValue (true, min.convertFrom0to1 (min.getDefaultValue()));
 
     auto range = min.getNormalisableRange();
 
