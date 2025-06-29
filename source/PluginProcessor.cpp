@@ -300,12 +300,24 @@ juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 //==============================================================================
 void AudioPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    juce::ignoreUnused (destData);
+    // Store
+    auto copyState = apvts.copyState();
+    auto xml = copyState.createXml();
+
+    // xml->setAttribute("SizeRatio", static_cast<double>(sizeRatio));
+
+    copyXmlToBinary(*xml.get(), destData);
 }
 
 void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    juce::ignoreUnused (data, sizeInBytes);
+    // Restore
+    auto xml = getXmlFromBinary(data, sizeInBytes);
+    // sizeRatio = static_cast<float>(xml->getDoubleAttribute("SizeRatio", 1.0));
+    // xml->removeAttribute("SizeRatio");
+    auto copyState = juce::ValueTree::fromXml(*xml.get());
+
+    apvts.replaceState(copyState);
 }
 
 //==============================================================================
