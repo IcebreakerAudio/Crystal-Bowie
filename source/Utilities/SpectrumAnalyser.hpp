@@ -88,19 +88,19 @@ private:
 
         const int kernelRadius = (kernelSize - 1) / 2;
 
-        for (size_t i = 0; i < source.size(); ++i)
+        for (int i = 0; i < source.size(); ++i)
         {
             float sum = 0.0f;
             float weightSum = 0.0f;
 
             for (int j = -kernelRadius; j <= kernelRadius; ++j)
             {
-                int neighbor_idx = i + j;
+                auto neighbourIdx = i + j;
 
-                if (neighbor_idx >= 0 && neighbor_idx < source.size())
+                if (neighbourIdx >= 0 && neighbourIdx < source.size())
                 {
                     float weight = kernelWeights[j + kernelRadius];
-                    sum += source[neighbor_idx] * weight;
+                    sum += source[neighbourIdx] * weight;
                     weightSum += weight;
                 }
             }

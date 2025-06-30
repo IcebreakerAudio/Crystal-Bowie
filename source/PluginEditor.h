@@ -24,7 +24,6 @@ private:
     AudioPluginAudioProcessor& processorRef;
 
     juce::DrawableButton powerButton { "Power", juce::DrawableButton::ButtonStyle::ImageFitted };
-    juce::DrawableButton osMenuButton { "OverSampling", juce::DrawableButton::ButtonStyle::ImageFitted };
 
     juce::Slider filterSlider { juce::Slider::SliderStyle::TwoValueHorizontal, juce::Slider::TextEntryBoxPosition::NoTextBox };
     juce::ToggleButton filterModeButton { "Mute High/Low Bands" };
@@ -45,6 +44,7 @@ private:
     {
         clipModeNeg_MenuId,
         clipModePos_MenuId,
+        overSampling_MenuId,
         numMenus
     };
 

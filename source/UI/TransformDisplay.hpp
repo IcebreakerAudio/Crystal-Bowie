@@ -15,7 +15,7 @@ public:
 
     void paint (juce::Graphics& g) override
     {
-
+        juce::ignoreUnused(g);
     }
 
     void resized() override

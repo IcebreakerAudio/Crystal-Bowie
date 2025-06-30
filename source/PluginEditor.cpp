@@ -5,7 +5,7 @@
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
 {
-    for(int i = 0; i < numMenus; ++i)
+    for(int i = 0; i < 2; ++i)
     {
         auto m = menus.add(std::make_unique<juce::ComboBox>());
         m->addItemList(Clipper::Names, 1);
@@ -13,7 +13,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     }
     menuAttachments.add(new juce::ComboBoxParameterAttachment(*(processorRef.apvts.getParameter("modeNeg")), *(menus[clipModeNeg_MenuId])));
     menuAttachments.add(new juce::ComboBoxParameterAttachment(*(processorRef.apvts.getParameter("modePos")), *(menus[clipModePos_MenuId])));
-
+    
+    auto m = menus.add(std::make_unique<juce::ComboBox>());
+    m->addItemList(juce::StringArray{ "HQ Off", "HQ x2", "HQ x4", "HQ x8", "HQ x16" }, 1);
+    addAndMakeVisible(m);
+    menuAttachments.add(new juce::ComboBoxParameterAttachment(*(processorRef.apvts.getParameter("modePos")), *m));
 
     for(int i = 0; i < numSliders; ++i)
     {
@@ -70,30 +74,31 @@ void AudioPluginAudioProcessorEditor::resized()
     const auto height = bounds.getHeight();
     const auto width = bounds.getWidth();
 
-    powerButton.setBounds(titleBounds.removeFromTop(height / 16));
+    powerButton.setBounds(titleBounds.removeFromTop(height / 20));
 
-    auto spectrumBounds = bounds.removeFromTop(height / 15);
+    auto spectrumBounds = bounds.removeFromTop(height / 13);
     spectrumDisplay.setBounds(spectrumBounds);
     filterSlider.setBounds(spectrumBounds);
-    bounds.removeFromTop(4);
+    bounds.removeFromTop(2);
     filterModeButton.setBounds(bounds.removeFromTop(height / 16));
 
     bounds.removeFromTop(12);
     auto graphBounds = bounds.removeFromTop(width * 8 / 10);
     transformDisplay.setBounds(graphBounds);
-    bounds.removeFromTop(12);
+    bounds.removeFromTop(10);
 
-    auto menuBounds = bounds.removeFromTop(height / 18);
+    auto menuBounds = bounds.removeFromTop(height / 22);
     menus[clipModeNeg_MenuId]->setBounds(menuBounds.removeFromLeft((width / 2) * 9 / 10));
     menus[clipModePos_MenuId]->setBounds(menuBounds.removeFromRight((width / 2) * 9 / 10));
-    bounds.removeFromTop(12);
+    bounds.removeFromTop(10);
 
-    sliders[drive_SliderId]->setBounds(bounds.removeFromTop(height / 6));
-    sliders[symmetry_SliderId]->setBounds(bounds.removeFromTop(height / 15));
-    auto sliderBounds = bounds.removeFromTop(height / 15);
+    sliders[drive_SliderId]->setBounds(bounds.removeFromTop(height / 10));
+    sliders[symmetry_SliderId]->setBounds(bounds.removeFromTop(height / 12));
+    auto sliderBounds = bounds.removeFromTop(height / 12);
     sliders[mix_SliderId]->setBounds(sliderBounds.removeFromLeft((width / 2) * 9 / 10));
     sliders[level_SliderId]->setBounds(sliderBounds.removeFromRight((width / 2) * 9 / 10));
-
+    
+    menus[overSampling_MenuId]->setBounds(bounds.removeFromBottom(height / 22).reduced(width / 4, 0));
 }
 
 void AudioPluginAudioProcessorEditor::timerCallback()
@@ -112,8 +117,8 @@ void AudioPluginAudioProcessorEditor::timerCallback()
 
 void AudioPluginAudioProcessorEditor::updateTransformDisplay()
 {
-    transformDisplay.setDrive(sliders[drive_SliderId]->getValue());
-    transformDisplay.setSymmetry(sliders[symmetry_SliderId]->getValue());
+    transformDisplay.setDrive(static_cast<float>(sliders[drive_SliderId]->getValue()));
+    transformDisplay.setSymmetry(static_cast<float>(sliders[symmetry_SliderId]->getValue()));
     transformDisplay.setClippingToUse(menus[clipModeNeg_MenuId]->getSelectedItemIndex(), menus[clipModePos_MenuId]->getSelectedItemIndex());
 
     transformDisplay.updateDisplay();
