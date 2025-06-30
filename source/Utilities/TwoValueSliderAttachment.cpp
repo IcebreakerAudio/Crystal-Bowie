@@ -15,6 +15,10 @@ void TwoValueSliderAttachment::setMaxValue (float newValue)
     
 void TwoValueSliderAttachment::sliderValueChanged(juce::Slider* s)
 {
+    if (ignoreCallbacks) {
+        return;
+    }
+
     thumbBeingDragged = s->getThumbBeingDragged();
     if (thumbBeingDragged == 1) {
         minAttachment.setValueAsPartOfGesture (s->getMinValue());
@@ -50,9 +54,9 @@ TwoValueSliderAttachment::TwoValueSliderAttachment(juce::Slider& s, juce::Ranged
                           minAttachment(min, [this] (float f) { setMinValue (f); }, um),
                           maxAttachment(max, [this] (float f) { setMaxValue (f); }, um)
 {
-    slider.valueFromTextFunction = [&min] (const juce::String& text) { return (double) min.convertFrom0to1 (min.getValueForText (text)); };
-    slider.textFromValueFunction = [&min] (double value) { return min.getText (min.convertTo0to1 ((float) value), 0); };
-    //slider.setDoubleClickReturnValue (true, min.convertFrom0to1 (min.getDefaultValue()));
+    // slider.valueFromTextFunction = [&min] (const juce::String& text) { return (double) min.convertFrom0to1 (min.getValueForText (text)); };
+    // slider.textFromValueFunction = [&min] (double value) { return min.getText (min.convertTo0to1 ((float) value), 0); };
+    // slider.setDoubleClickReturnValue (true, min.convertFrom0to1 (min.getDefaultValue()));
 
     auto range = min.getNormalisableRange();
 
@@ -94,13 +98,17 @@ TwoValueSliderAttachment::TwoValueSliderAttachment(juce::Slider& s, juce::Ranged
 
     slider.setNormalisableRange (newRange);
 
-    minAttachment.sendInitialUpdate();
-    maxAttachment.sendInitialUpdate();
-
+    sendInitialUpdate();
     slider.addListener (this);
 }
 
 TwoValueSliderAttachment::~TwoValueSliderAttachment()
 {
     slider.removeListener (this);
+}
+
+void TwoValueSliderAttachment::sendInitialUpdate()
+{
+    maxAttachment.sendInitialUpdate();
+    minAttachment.sendInitialUpdate();
 }
