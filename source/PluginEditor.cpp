@@ -31,6 +31,17 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     filterSliderAttachment = std::make_unique<TwoValueSliderAttachment>(filterSlider, *(processorRef.apvts.getParameter("xOverLow")), *(processorRef.apvts.getParameter("xOverHigh")));
     addAndMakeVisible(filterSlider);
 
+    auto onImage = juce::Drawable::createFromImageData(BinaryData::Power_On_svg, BinaryData::Power_On_svgSize);
+    auto offImage = juce::Drawable::createFromImageData(BinaryData::Power_Off_svg, BinaryData::Power_Off_svgSize);
+    powerButton.setImages(offImage.get(), nullptr, nullptr, nullptr,
+                          onImage.get());
+    powerButton.setClickingTogglesState(true);
+    buttonAttachments.add(new juce::ButtonParameterAttachment(*(processorRef.apvts.getParameter("active")), powerButton));
+    addAndMakeVisible(powerButton);
+    
+    buttonAttachments.add(new juce::ButtonParameterAttachment(*(processorRef.apvts.getParameter("filter")), filterModeButton));
+    addAndMakeVisible(filterModeButton);
+
     setSize (420, 630);
     startTimer (1000 / 50);
 }
@@ -50,29 +61,34 @@ void AudioPluginAudioProcessorEditor::resized()
 {
 
     auto bounds = getLocalBounds();
+    const auto padding = bounds.getHeight() / 48;
 
     auto titleBounds = bounds.removeFromLeft(bounds.getWidth() * 2 / 11);
-
-    const auto padding = bounds.getHeight() / 48;
+    titleBounds.reduce(padding, padding);
     bounds.reduce(padding, padding);
+
     const auto height = bounds.getHeight();
     const auto width = bounds.getWidth();
+
+    powerButton.setBounds(titleBounds.removeFromTop(height / 16));
 
     auto spectrumBounds = bounds.removeFromTop(height / 15);
     spectrumDisplay.setBounds(spectrumBounds);
     filterSlider.setBounds(spectrumBounds);
+    bounds.removeFromTop(4);
+    filterModeButton.setBounds(bounds.removeFromTop(height / 16));
 
-    bounds.removeFromTop(15);
-    auto graphBounds = bounds.removeFromTop(width * 9 / 10);
+    bounds.removeFromTop(12);
+    auto graphBounds = bounds.removeFromTop(width * 8 / 10);
     transformDisplay.setBounds(graphBounds);
-    bounds.removeFromTop(15);
+    bounds.removeFromTop(12);
 
     auto menuBounds = bounds.removeFromTop(height / 18);
     menus[clipModeNeg_MenuId]->setBounds(menuBounds.removeFromLeft((width / 2) * 9 / 10));
     menus[clipModePos_MenuId]->setBounds(menuBounds.removeFromRight((width / 2) * 9 / 10));
-    bounds.removeFromTop(15);
+    bounds.removeFromTop(12);
 
-    sliders[drive_SliderId]->setBounds(bounds.removeFromTop(height / 5));
+    sliders[drive_SliderId]->setBounds(bounds.removeFromTop(height / 6));
     sliders[symmetry_SliderId]->setBounds(bounds.removeFromTop(height / 15));
     auto sliderBounds = bounds.removeFromTop(height / 15);
     sliders[mix_SliderId]->setBounds(sliderBounds.removeFromLeft((width / 2) * 9 / 10));

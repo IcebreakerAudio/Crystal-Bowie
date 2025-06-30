@@ -26,7 +26,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     apvts.addParameterListener("outGain", &mainParamListener);
     apvts.addParameterListener("xOverLow", &mainParamListener);
     apvts.addParameterListener("xOverHigh", &mainParamListener);
-    apvts.addParameterListener("pbLevel", &mainParamListener);
+    apvts.addParameterListener("filter", &mainParamListener);
     apvts.addParameterListener("mix", &mainParamListener);
 }
 
@@ -112,13 +112,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 juce::AudioParameterFloatAttributes().withLabel("Hz")
                 ));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID{ "pbLevel", 1 },
-                "Pass Band Level",
-                juce::NormalisableRange<float>(-60.0f, 12.0f, 0.01f, 1.5f),
-                0.0f,
-                juce::AudioParameterFloatAttributes().withLabel("dB")
-                ));
+    layout.add(std::make_unique<juce::AudioParameterBool>(
+                juce::ParameterID{ "filter", 1 },
+                "Mute High/Low",
+                false));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
                 juce::ParameterID{ "mix", 1 },
@@ -345,7 +342,7 @@ void AudioPluginAudioProcessor::updateMainParameters()
 
     auto lowFreq = static_cast<double>(loadRawParameterValue("xOverLow"));
     auto highFreq = static_cast<double>(loadRawParameterValue("xOverHigh"));
-    auto pbLevel = loadRawParameterValue("pbLevel");
+    auto pbLevel = loadRawParameterValue("filter") > 0.5f ? -96.0f : 0.0f;
     auto mix = loadRawParameterValue("mix") * 0.01f;
 
     if(!active) {

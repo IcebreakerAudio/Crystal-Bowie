@@ -4,6 +4,7 @@
 #include "UI/SpectrumDisplay.hpp"
 #include "UI/TransformDisplay.hpp"
 #include "Utilities/TwoValueSliderAttachment.hpp"
+#include <BinaryData.h>
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor, public juce::Timer
@@ -22,8 +23,11 @@ private:
 
     AudioPluginAudioProcessor& processorRef;
 
+    juce::DrawableButton powerButton { "Power", juce::DrawableButton::ButtonStyle::ImageFitted };
+    juce::DrawableButton osMenuButton { "OverSampling", juce::DrawableButton::ButtonStyle::ImageFitted };
+
     juce::Slider filterSlider { juce::Slider::SliderStyle::TwoValueHorizontal, juce::Slider::TextEntryBoxPosition::NoTextBox };
-    juce::TextButton filterModeButton {"Filter", "FILTER"};
+    juce::ToggleButton filterModeButton { "Mute High/Low Bands" };
 
     SpectrumDisplay spectrumDisplay;
     TransformDisplay transformDisplay;
@@ -34,6 +38,7 @@ private:
 
     juce::OwnedArray<juce::ComboBoxParameterAttachment> menuAttachments;
     juce::OwnedArray<juce::SliderParameterAttachment> sliderAttachments;
+    juce::OwnedArray<juce::ButtonParameterAttachment> buttonAttachments;
     std::unique_ptr<TwoValueSliderAttachment> filterSliderAttachment;
 
     enum menu_ids

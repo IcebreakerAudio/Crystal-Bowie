@@ -97,7 +97,6 @@ TwoValueSliderAttachment::TwoValueSliderAttachment(juce::Slider& s, juce::Ranged
     minAttachment.sendInitialUpdate();
     maxAttachment.sendInitialUpdate();
 
-    slider.valueChanged();
     slider.addListener (this);
 }
 
