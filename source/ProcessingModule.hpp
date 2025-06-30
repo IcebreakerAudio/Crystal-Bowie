@@ -9,13 +9,13 @@ namespace Clipper
 {
     const juce::StringArray Names
     {
-        "Hard Clip",
-        "Tanh",
         "Atan",
         "x / (1 + |x|)",
         "x / sqrt(1 + x^2)",
-        "x - (x^3 / 6)",
+        "Tanh",
         "Poly Soft Clip",
+        "x - (x^3 / 6)",
+        "Hard Clip",
         "Ripple"
     };
 };

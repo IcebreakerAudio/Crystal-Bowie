@@ -3,13 +3,13 @@
 template<typename Type>
 ProcessingModule<Type>::ProcessingModule()
 {
-    clippers.push_back(IADSP::BasicClippers::hardClip<Type>);
-    clippers.push_back([](Type x) -> Type { return std::tanh(x); });
     clippers.push_back([](Type x) -> Type { return std::atan(x); });
     clippers.push_back(IADSP::BasicClippers::saturate<Type>);
     clippers.push_back(IADSP::BasicClippers::saturateRootSquared<Type>);
-    clippers.push_back(IADSP::BasicClippers::cubicSoftClip<Type>);
+    clippers.push_back([](Type x) -> Type { return std::tanh(x); });
     clippers.push_back(IADSP::BasicClippers::polySoftClip<Type>);
+    clippers.push_back(IADSP::BasicClippers::cubicSoftClip<Type>);
+    clippers.push_back(IADSP::BasicClippers::hardClip<Type>);
     clippers.push_back(IADSP::BasicClippers::ripple<Type>);
 }
 

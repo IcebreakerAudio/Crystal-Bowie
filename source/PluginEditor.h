@@ -26,7 +26,7 @@ private:
     juce::DrawableButton powerButton { "Power", juce::DrawableButton::ButtonStyle::ImageFitted };
 
     juce::Slider filterSlider { juce::Slider::SliderStyle::TwoValueHorizontal, juce::Slider::TextEntryBoxPosition::NoTextBox };
-    juce::ToggleButton filterModeButton { "Mute High/Low Bands" };
+    juce::ToggleButton filterModeButton { "Mute Low & High Bands" };
 
     SpectrumDisplay spectrumDisplay;
     TransformDisplay transformDisplay;
