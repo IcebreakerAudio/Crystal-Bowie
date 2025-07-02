@@ -21,10 +21,10 @@ void TwoValueSliderAttachment::sliderValueChanged(juce::Slider* s)
 
     thumbBeingDragged = s->getThumbBeingDragged();
     if (thumbBeingDragged == 1) {
-        minAttachment.setValueAsPartOfGesture (s->getMinValue());
+        minAttachment.setValueAsPartOfGesture (static_cast<float>(s->getMinValue()));
     }
     else if (thumbBeingDragged == 2) {
-        maxAttachment.setValueAsPartOfGesture (s->getMaxValue());
+        maxAttachment.setValueAsPartOfGesture (static_cast<float>(s->getMaxValue()));
     }
 }
 
@@ -39,7 +39,7 @@ void TwoValueSliderAttachment::sliderDragStarted(juce::Slider* s)
     }
 }
 
-void TwoValueSliderAttachment::sliderDragEnded(juce::Slider* s)
+void TwoValueSliderAttachment::sliderDragEnded([[maybe_unused]] juce::Slider* s)
 {
     if (thumbBeingDragged == 1) {
         minAttachment.endGesture();

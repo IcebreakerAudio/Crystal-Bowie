@@ -264,8 +264,7 @@ void ProcessingModule<Type>::resetSmoothers()
 
 //==============================================================================
 
-template<typename Type>
-void ProcessingModule<Type>::drawPath(juce::Path& p, juce::Rectangle<float> bounds, float scale)
+void ProcessingModule<float>::drawPath(juce::Path& p, juce::Rectangle<float> bounds, float scale)
 {
     const auto xO = bounds.getX();
     const auto yO = bounds.getY();
@@ -328,6 +327,13 @@ void ProcessingModule<Type>::drawPath(juce::Path& p, juce::Rectangle<float> boun
     }
 
     resetSmoothers();
+}
+
+void ProcessingModule<double>::drawPath(juce::Path& p, juce::Rectangle<float> bounds, float scale)
+{
+    jassertfalse; // only use the drawPath() function with float version 
+    juce::ignoreUnused(p, bounds, scale);
+    return;
 }
 
 //==============================================================================

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "UI/CustomLookAndFeel.hpp"
 #include "UI/SpectrumDisplay.hpp"
 #include "UI/TransformDisplay.hpp"
 #include "Utilities/TwoValueSliderAttachment.hpp"
@@ -22,6 +23,13 @@ public:
 private:
 
     AudioPluginAudioProcessor& processorRef;
+    CustomLookAndFeel lnf;
+
+    const int oWidth = 420;
+    const int oHeight = 630;
+    float resizeRatio = 1.0f;
+
+    std::unique_ptr<juce::Drawable> background;
 
     juce::DrawableButton powerButton { "Power", juce::DrawableButton::ButtonStyle::ImageFitted };
 
@@ -33,7 +41,7 @@ private:
 
     juce::OwnedArray<juce::ComboBox> menus;
     juce::OwnedArray<juce::Slider> sliders;
-    juce::OwnedArray<juce::Label> labels;
+    juce::OwnedArray<juce::Label> sliderLabels;
 
     juce::OwnedArray<juce::ComboBoxParameterAttachment> menuAttachments;
     juce::OwnedArray<juce::SliderParameterAttachment> sliderAttachments;

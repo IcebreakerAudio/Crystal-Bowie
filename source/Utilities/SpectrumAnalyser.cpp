@@ -180,7 +180,7 @@ void SpectrumAnalyser::createLinePath (juce::Path& p, const juce::Rectangle<floa
     }
 
     p.clear();
-    p.preallocateSpace (8 + outputData.size() * 3);
+    p.preallocateSpace (8 + static_cast<int>(outputData.size()) * 3);
 
     std::lock_guard lockedForReading (readWriteMutex);
     auto secondsPassed = float(samplesPassed) / externalSampleRate;
@@ -215,6 +215,9 @@ void SpectrumAnalyser::createLinePath (juce::Path& p, const juce::Rectangle<floa
 
 void SpectrumAnalyser::createBarPath (juce::Path& p, const juce::Rectangle<float> bounds)
 {
+    // To Do - create variation that uses bars instead of graph
+    juce::ignoreUnused(p);
+    juce::ignoreUnused(bounds);
 }
 
 void SpectrumAnalyser::setRange(float minimumFreq, float maximumFreq, int resolution, bool useLogScale)

@@ -21,7 +21,7 @@ public:
     void resized() override
     {
         background.setBounds(getLocalBounds());
-        display.setBounds(getLocalBounds());
+        display.setBounds(getLocalBounds().reduced(1,1));
     }
 
     void setClippingToUse(int negativeIndex, int positiveIndex)
@@ -89,26 +89,44 @@ public:
 
 private:
 
-    const float scale = 1.2f;
+    const float scale = 1.25f;
 
     struct BackgroundComponent : public juce::Component
     {
-        BackgroundComponent() {};
+        BackgroundComponent() { setBufferedToImage(true); };
         ~BackgroundComponent() override {};
         void paint (juce::Graphics& g) override
         {
-            g.fillAll(juce::Colours::black.withAlpha(0.1f));
+            g.fillAll(juce::Colours::black.withAlpha(0.25f));
+
+            const auto bounds = getLocalBounds().toFloat();
+            auto reducedBounds = bounds.withSizeKeepingCentre(bounds.getWidth() / scale, bounds.getHeight() / scale);
+
+            g.setColour(juce::Colours::lightgrey.withAlpha(0.75f));
+
+            g.fillRect(juce::Rectangle<float>(bounds.getCentreX() - 0.5f, bounds.getY(), 1.0f, bounds.getHeight()));
+            g.fillRect(juce::Rectangle<float>(bounds.getX(), bounds.getCentreY() - 0.5f, bounds.getWidth(), 1.0f));
+
+            g.setColour(juce::Colours::lightgrey.withAlpha(0.1f));
+
+            for(int i = 0; i < 9; ++i)
+            {
+                auto factor = static_cast<float>(i) / 8.0f;
+                for(int k = 0; k < (i % 2) + 1; ++k) {
+                    float size = k % 2 == 0 ? 1.0f : 2.0f;
+                    g.fillRect(juce::Rectangle<float>(reducedBounds.getX() + (reducedBounds.getWidth() * factor) - (size * 0.5f), bounds.getY(), size, bounds.getHeight()));
+                    g.fillRect(juce::Rectangle<float>(bounds.getX(), reducedBounds.getY() + (reducedBounds.getHeight() * factor) - (size * 0.5f), bounds.getWidth(), size));
+                }
+            }
 
             g.setColour(juce::Colours::lightgrey);
-            const auto bounds = getLocalBounds().toFloat();
-
             g.drawRect(bounds.reduced(0.5f));
-
-            g.fillRect(juce::Rectangle<float>(bounds.getCentreX() - 1.0f, bounds.getY(), 2.0f, bounds.getHeight()));
-            g.fillRect(juce::Rectangle<float>(bounds.getX(), bounds.getCentreY() - 1.0f, bounds.getWidth(), 2.0f));
         }
+
         void resized() override
         {}
+
+        float scale = 1.25f;
     };
 
     struct DisplayComponent : public juce::Component
