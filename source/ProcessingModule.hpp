@@ -40,7 +40,7 @@ public:
     void setMix(Type dryWetMixRatio);
     void setPassBandLevel(Type levelInDecibels);
 
-    int getLatency();
+    int getMaxLatency() { return maxLatency; }
     bool isPrepared() { return prepared; }
 
     void processBlock(juce::dsp::AudioBlock<Type>& block);
@@ -69,6 +69,10 @@ private:
     IADSP::CrossoverFilter<Type> xOverFilterLow, xOverFilterHigh;
     std::vector<std::function<Type(Type)>> clippers;
 
+    void updateDelayTime();
+    juce::dsp::ProcessSpec delaySpec { 48000.0, 0, 0 };
+    juce::dsp::DelayLine<Type, juce::dsp::DelayLineInterpolationTypes::None> delay;
+
     Type processSample(Type sample, int channel = 0);
 
     //==============================================================================
@@ -88,6 +92,8 @@ private:
     void updateFilterSampleRate();
 
     bool prepared = false;
+
+    int maxLatency = 0;
 
     //==============================================================================
 

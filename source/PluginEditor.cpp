@@ -61,14 +61,16 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     buttonAttachments.add(new juce::ButtonParameterAttachment(*(processorRef.apvts.getParameter("filter")), filterModeButton));
     addAndMakeVisible(filterModeButton);
 
+    resizeRatio = processorRef.getSizeRatio();
+    processorRef.updateInterface.store(false);
+    setSize(juce::roundToInt(float(oWidth) * resizeRatio),
+            juce::roundToInt(float(oHeight) * resizeRatio));
+
     setResizable(true, true);
     double ratio = double(oWidth) / double(oHeight);
     getConstrainer()->setFixedAspectRatio(ratio);
-    setSize(juce::roundToInt(float(oWidth) * resizeRatio),
-            juce::roundToInt(float(oHeight) * resizeRatio));
     setResizeLimits(oWidth / 2, oHeight / 2, oWidth * 2, oHeight * 2);
 
-    setSize (oWidth, oHeight);
     startTimer (1000 / 50);
 }
 
@@ -89,6 +91,7 @@ void AudioPluginAudioProcessorEditor::resized()
     auto bounds = getLocalBounds();
 
     resizeRatio = static_cast<float>(bounds.getHeight()) / float(oHeight);
+    processorRef.setSizeRatio(resizeRatio);
 
     if(background) {
         background->setTransformToFit(bounds.toFloat(), juce::RectanglePlacement::fillDestination);
@@ -111,18 +114,18 @@ void AudioPluginAudioProcessorEditor::resized()
     auto spectrumBounds = bounds.removeFromTop(height / 13);
     spectrumDisplay.setBounds(spectrumBounds);
     filterSlider.setBounds(spectrumBounds);
-    bounds.removeFromTop(2);
-    filterModeButton.setBounds(bounds.removeFromTop(height / 16));
+    bounds.removeFromTop(juce::roundToInt(2.0f * resizeRatio));
+    filterModeButton.setBounds(bounds.removeFromTop(height / 16).removeFromLeft(width * 11 / 20));
 
-    bounds.removeFromTop(12);
+    bounds.removeFromTop(juce::roundToInt(12.0f * resizeRatio));
     auto graphBounds = bounds.removeFromTop(width * 8 / 10);
     transformDisplay.setBounds(graphBounds);
-    bounds.removeFromTop(10);
+    bounds.removeFromTop(juce::roundToInt(10.0f * resizeRatio));
 
     auto menuBounds = bounds.removeFromTop(height / 22);
     menus[clipModeNeg_MenuId]->setBounds(menuBounds.removeFromLeft((width / 2) * 9 / 10));
     menus[clipModePos_MenuId]->setBounds(menuBounds.removeFromRight((width / 2) * 9 / 10));
-    bounds.removeFromTop(10);
+    bounds.removeFromTop(juce::roundToInt(10.0f * resizeRatio));
 
     auto tempBounds = bounds.removeFromTop(height / 11);
     sliderLabels[drive_SliderId]->setBounds(tempBounds.removeFromLeft(width / 8));
@@ -148,6 +151,12 @@ void AudioPluginAudioProcessorEditor::resized()
 
 void AudioPluginAudioProcessorEditor::timerCallback()
 {
+    if(processorRef.updateInterface.exchange(false)) {
+        resizeRatio = processorRef.getSizeRatio();
+        setSize(juce::roundToInt(float(oWidth) * resizeRatio),
+                juce::roundToInt(float(oHeight) * resizeRatio));
+    }
+
     auto redraw = processorRef.spectrumProcessor.checkForNewData();
     if(redraw)
     {

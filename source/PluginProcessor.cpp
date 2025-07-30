@@ -142,10 +142,12 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     floatProcessor.reset();
     doubleProcessor.reset();
 
-    spectrumProcessor.prepare(juce::roundToInt(sampleRate), sampleRate);
+    spectrumProcessor.prepare(juce::roundToInt(sampleRate * 0.5), sampleRate);
     spectrumProcessor.setRange(20.0f, 19500.0f, 200);
     spectrumProcessor.setLineSmoothing(9);
-    spectrumProcessor.setDecayTime(1500.0f);
+    spectrumProcessor.setDecayTime(1000.0f);
+
+    auto spec = juce::dsp::ProcessSpec(sampleRate, samplesPerBlock, numChannels);
 
     if(isUsingDoublePrecision())
     {
@@ -153,6 +155,15 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         doubleProcessor = std::make_unique<ProcessingModule<double>>();
         doubleProcessor->prepare(numChannels, samplesPerBlock);
         doubleProcessor->setSampleRate(sampleRate);
+        
+        const auto latency = doubleProcessor->getMaxLatency();
+
+        doubleDelay = std::make_unique<juce::dsp::DelayLine<double, juce::dsp::DelayLineInterpolationTypes::None>>();
+        doubleDelay->prepare(spec);
+        doubleDelay->setMaximumDelayInSamples(latency + 1);
+        doubleDelay->setDelay(double(latency));
+
+        setLatencySamples(latency);
     }
     else
     {
@@ -160,6 +171,15 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         floatProcessor = std::make_unique<ProcessingModule<float>>();
         floatProcessor->prepare(numChannels, samplesPerBlock);
         floatProcessor->setSampleRate(sampleRate);
+
+        const auto latency = floatProcessor->getMaxLatency();
+
+        floatDelay = std::make_unique<juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::None>>();
+        floatDelay->prepare(spec);
+        floatDelay->setMaximumDelayInSamples(latency + 1);
+        floatDelay->setDelay(float(latency));
+
+        setLatencySamples(latency);
     }
 
     floatGainSmoother.reset(sampleRate, smoothingTimeMs * 0.001);
@@ -301,7 +321,7 @@ void AudioPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData
     auto copyState = apvts.copyState();
     auto xml = copyState.createXml();
 
-    // xml->setAttribute("SizeRatio", static_cast<double>(sizeRatio));
+    xml->setAttribute("SizeRatio", static_cast<double>(interfaceSizeRatio));
 
     copyXmlToBinary(*xml.get(), destData);
 }
@@ -310,10 +330,12 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 {
     // Restore
     auto xml = getXmlFromBinary(data, sizeInBytes);
-    // sizeRatio = static_cast<float>(xml->getDoubleAttribute("SizeRatio", 1.0));
-    // xml->removeAttribute("SizeRatio");
-    auto copyState = juce::ValueTree::fromXml(*xml.get());
 
+    interfaceSizeRatio = static_cast<float>(xml->getDoubleAttribute("SizeRatio", 1.0));
+    xml->removeAttribute("SizeRatio");
+    updateInterface.store(true);
+
+    auto copyState = juce::ValueTree::fromXml(*xml.get());
     apvts.replaceState(copyState);
 }
 
@@ -404,3 +426,48 @@ void AudioPluginAudioProcessor::updateAllParameters()
     updateMainParameters();
 }
 
+//==============================================================================
+
+void AudioPluginAudioProcessor::processBlockBypassed (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+{
+    juce::ignoreUnused(midiMessages);
+
+    if(!floatDelay) {
+        return;
+    }
+
+    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    auto numSamples = buffer.getNumSamples();
+    
+    auto block = juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(0, totalNumInputChannels);
+    auto context = juce::dsp::ProcessContextReplacing(block);
+    floatDelay->process(context);
+
+    if(totalNumOutputChannels > totalNumInputChannels)
+    {
+        buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
+    }
+}
+
+void AudioPluginAudioProcessor::processBlockBypassed (juce::AudioBuffer<double>& buffer, juce::MidiBuffer& midiMessages)
+{
+    juce::ignoreUnused(midiMessages);
+
+    if(!doubleDelay) {
+        return;
+    }
+
+    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    auto numSamples = buffer.getNumSamples();
+    
+    auto block = juce::dsp::AudioBlock<double>(buffer).getSubsetChannelBlock(0, totalNumInputChannels);
+    auto context = juce::dsp::ProcessContextReplacing(block);
+    doubleDelay->process(context);
+
+    if(totalNumOutputChannels > totalNumInputChannels)
+    {
+        buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
+    }
+}

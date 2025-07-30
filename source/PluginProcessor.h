@@ -24,8 +24,8 @@ public:
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
     void processBlock (juce::AudioBuffer<double>&, juce::MidiBuffer&) override;
-    void processBlockBypassed (juce::AudioBuffer<float>&, juce::MidiBuffer&) override {};
-    void processBlockBypassed (juce::AudioBuffer<double>&, juce::MidiBuffer&) override {};
+    void processBlockBypassed (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void processBlockBypassed (juce::AudioBuffer<double>&, juce::MidiBuffer&) override;
     using AudioProcessor::processBlock;
 
     //==============================================================================
@@ -64,6 +64,14 @@ public:
     float getMin() { return min.load(); }
     float getMax() { return max.load(); }
 
+    std::atomic<bool> updateInterface { false };
+    float getSizeRatio() {
+        return interfaceSizeRatio;
+    }
+    void setSizeRatio(float ratio) {
+        interfaceSizeRatio = ratio;
+    }
+
 private:
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
@@ -85,6 +93,9 @@ private:
     std::unique_ptr<ProcessingModule<float>> floatProcessor;
     std::unique_ptr<ProcessingModule<double>> doubleProcessor;
 
+    std::unique_ptr<juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::None>> floatDelay;
+    std::unique_ptr<juce::dsp::DelayLine<double, juce::dsp::DelayLineInterpolationTypes::None>> doubleDelay;
+
     const double smoothingTimeMs = 20.0;
     juce::LinearSmoothedValue<float> floatGainSmoother {1.0f};
     juce::LinearSmoothedValue<double> doubleGainSmoother {1.0};
@@ -92,6 +103,7 @@ private:
     //==============================================================================
 
     std::atomic<float> min {0.0f}, max {0.0f};
+    float interfaceSizeRatio = 1.0f;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

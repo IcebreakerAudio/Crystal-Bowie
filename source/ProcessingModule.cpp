@@ -16,6 +16,11 @@ ProcessingModule<Type>::ProcessingModule()
 template<typename Type>
 void ProcessingModule<Type>::prepare(const int numChannels, const int expectedBufferSize)
 {
+    if(overSamplers.size() > 0) {
+        overSamplers.clear();
+    }
+
+    maxLatency = 0;
     for(int i = 0; i < numOversamplers; ++i)
     {
         auto& os = overSamplers.emplace_back(std::make_unique<juce::dsp::Oversampling<Type>>(numChannels));
@@ -31,10 +36,18 @@ void ProcessingModule<Type>::prepare(const int numChannels, const int expectedBu
         }
         os->setUsingIntegerLatency(true);
         os->initProcessing(expectedBufferSize);
+
+        auto l = static_cast<int>(os->getLatencyInSamples());
+        if(l > maxLatency) {
+            maxLatency = l;
+        }
     }
 
     xOverFilterLow.setNumChannels(numChannels);
     xOverFilterHigh.setNumChannels(numChannels);
+
+    delaySpec.numChannels = numChannels;
+    delaySpec.maximumBlockSize = expectedBufferSize;
 
     prepared = true;
 }
@@ -87,6 +100,9 @@ void ProcessingModule<Type>::processBlock(juce::dsp::AudioBlock<Type>& block)
     }
 
     overSamplers[osIndex]->processSamplesDown(block);
+
+    auto context = juce::dsp::ProcessContextReplacing(block);
+    delay.process(context);
 }
 
 template<typename Type>
@@ -141,8 +157,15 @@ void ProcessingModule<Type>::setSampleRate(double newSampleRate)
         return;
     }
 
+    delaySpec.sampleRate = newSampleRate;
+    jassert(delaySpec.numChannels > 0 && delaySpec.maximumBlockSize > 0);
+
+    delay.prepare(delaySpec);
+    delay.setMaximumDelayInSamples(maxLatency);
+
     sampleRate = newSampleRate;
     updateFilterSampleRate();
+    updateDelayTime();
     resetSmoothers();
 }
 
@@ -155,6 +178,18 @@ void ProcessingModule<Type>::updateFilterSampleRate()
 
     xOverFilterLow.setSampleRate(overSampleRate);
     xOverFilterHigh.setSampleRate(overSampleRate);
+}
+
+template<typename Type>
+void ProcessingModule<Type>::updateDelayTime()
+{
+    auto delayTime = static_cast<Type>(maxLatency) - overSamplers[osIndex]->getLatencyInSamples();
+    if(delayTime < zero) {
+        delayTime = zero;
+    }
+    DBG("Delay Time");
+    DBG(delayTime);
+    delay.setDelay(delayTime);
 }
 
 template<typename Type>
@@ -176,17 +211,7 @@ void ProcessingModule<Type>::setOverSampleIndex(int newIndex)
     overSamplers[osIndex]->reset();
     osFactor = static_cast<int>(overSamplers[osIndex]->getOversamplingFactor());
     updateFilterSampleRate();
-}
-
-template<typename Type>
-int ProcessingModule<Type>::getLatency()
-{
-    jassert(prepared);
-    if(!prepared) {
-        return 0;
-    }
-
-    return static_cast<int>(overSamplers[osIndex]->getLatencyInSamples());
+    updateDelayTime();
 }
 
 //==============================================================================

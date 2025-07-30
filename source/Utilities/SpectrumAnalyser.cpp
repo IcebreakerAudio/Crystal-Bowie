@@ -3,7 +3,7 @@
 
 SpectrumAnalyser::SpectrumAnalyser(int fftOrder, bool useMultiResolution)
     : juce::Thread ("Analyser"), fft {fftOrder},
-      windowing { size_t (1 << fftOrder), juce::dsp::WindowingFunction<float>::blackmanHarris, true }
+      windowing { size_t(1) << size_t(fftOrder), juce::dsp::WindowingFunction<float>::blackmanHarris, true }
 {
     useHQBass = useMultiResolution;
     fftSize = fft.getSize();
@@ -86,7 +86,7 @@ void SpectrumAnalyser::run()
             samplesSinceLastRead.store(audioStreamFifo.getSizeToRead() + samplesPassed);
             while(audioStreamFifo.getSizeToRead() >= fftInBuffer.size())
             {
-                audioStreamFifo.readFromFifo(fftInBuffer.data(), fftInBuffer.size());
+                audioStreamFifo.readFromFifo(fftInBuffer.data(), static_cast<int>(fftInBuffer.size()));
 
                 if (useDownSampling) {
                     downSamplingFilter.processMono(fftInBuffer, fftProcessBuffer, fftInBuffer.size());
@@ -103,10 +103,10 @@ void SpectrumAnalyser::run()
             }
             audioStreamFifo.reset();
 
-            windowing.multiplyWithWindowingTable (fftProcessBuffer.data(), size_t (fftSize));
-            fft.performFrequencyOnlyForwardTransform (fftProcessBuffer.data());
+            windowing.multiplyWithWindowingTable(fftProcessBuffer.data(), static_cast<size_t>(fftSize));
+            fft.performFrequencyOnlyForwardTransform(fftProcessBuffer.data());
 
-            std::lock_guard lockedForWriting (readWriteMutex);
+            std::lock_guard lockedForWriting(readWriteMutex);
 
             for(int i = 0; i < outputData.size(); ++i)
             {
@@ -135,10 +135,10 @@ void SpectrumAnalyser::run()
                 bassStreamFiFo.readFromFifo(fftProcessBuffer.data(), fftSize);
             }
 
-            windowing.multiplyWithWindowingTable (fftProcessBuffer.data(), size_t (fftSize));
-            fft.performFrequencyOnlyForwardTransform (fftProcessBuffer.data());
+            windowing.multiplyWithWindowingTable(fftProcessBuffer.data(), size_t (fftSize));
+            fft.performFrequencyOnlyForwardTransform(fftProcessBuffer.data());
 
-            std::lock_guard lockedForWriting (readWriteMutex);
+            std::lock_guard lockedForWriting(readWriteMutex);
 
             for(int i = 0; i < outputData.size(); ++i)
             {
@@ -193,12 +193,12 @@ void SpectrumAnalyser::createLinePath (juce::Path& p, const juce::Rectangle<floa
 
     auto oX = bounds.getX();
     auto oY = bounds.getY();
-    p.startNewSubPath(oX, oY + juce::jmap(juce::Decibels::gainToDecibels(smoothedData[0]), -72.0f, 0.0f, bounds.getBottom(), bounds.getY()));
+    p.startNewSubPath(oX, oY + juce::jmap(juce::Decibels::gainToDecibels(smoothedData[0]), -96.0f, 0.0f, bounds.getBottom(), bounds.getY()));
 
     for(int i = 1; i < smoothedData.size(); ++i)
     {
         auto xPos = i * width / size;
-        auto yPos = juce::jmap (juce::Decibels::gainToDecibels(smoothedData[i]), -72.0f, 0.0f, bounds.getBottom(), bounds.getY());
+        auto yPos = juce::jmap (juce::Decibels::gainToDecibels(smoothedData[i]), -96.0f, 0.0f, bounds.getBottom(), bounds.getY());
         p.lineTo(oX + xPos, oY + yPos);
     }
 

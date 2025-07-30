@@ -102,7 +102,7 @@ void CustomLookAndFeel::drawLinearSlider (juce::Graphics& g, int x, int y, int w
     else
     {
         auto isBipolar =  juce::approximatelyEqual(std::abs(slider.getMinimum()), slider.getMaximum());
-        auto trackWidth = juce::jmin (12.0f, (float) height * 0.5f);
+        auto trackWidth = juce::jmax (5.0f, (float) height * 0.2f);
 
         juce::Point<float> startPoint ((float) x, (float) y + (float) height * 0.5f);
         juce::Point<float> endPoint ((float) (width + x), startPoint.y);
