@@ -61,6 +61,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     buttonAttachments.add(new juce::ButtonParameterAttachment(*(processorRef.apvts.getParameter("filter")), filterModeButton));
     addAndMakeVisible(filterModeButton);
 
+    sliders[drive_SliderId]->onValueChange = [&](){ transformParametersChanged = true; };
+    sliders[symmetry_SliderId]->onValueChange = [&](){ transformParametersChanged = true; };
+    menus[clipModeNeg_MenuId]->onChange = [&](){ transformParametersChanged = true; };
+    menus[clipModePos_MenuId]->onChange = [&](){ transformParametersChanged = true; };
+
     resizeRatio = processorRef.getSizeRatio();
     processorRef.updateInterface.store(false);
     setSize(juce::roundToInt(float(oWidth) * resizeRatio),
@@ -165,7 +170,11 @@ void AudioPluginAudioProcessorEditor::timerCallback()
         spectrumDisplay.update();
     }
 
-    updateTransformDisplay();
+    if(transformParametersChanged)
+    {
+        transformParametersChanged = false;
+        updateTransformDisplay();
+    }
     transformDisplay.setMinMax(processorRef.getMin(), processorRef.getMax());
 }
 
