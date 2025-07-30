@@ -29,7 +29,8 @@ public:
     void createLinePath (juce::Path& p, const juce::Rectangle<float> bounds);
     void createBarPath (juce::Path& p, const juce::Rectangle<float> bounds);
 
-    void setRange(float minimumFreq, float maximumFreq, int resolution, bool useLogScale = true);
+    void setFreqRange(float minimumFreq, float maximumFreq, int resolution, bool useLogScale = true);
+    void setDecibelRange(float min, float max);
     void setDecayTime(float decayTimeMs);
     void setLineSmoothing(int lineSmoothing);
 
@@ -141,6 +142,7 @@ private:
     bool logScale = true;
     float scaleFactor = 9.9f;
     float minFreq = 20.0f, maxFreq = 20000.0f;
+    float dbMin = -96.0f, dbMax = 0.0f;
 
     std::atomic<bool> newDataAvailable = false;
     std::atomic<int> samplesSinceLastRead = 0;

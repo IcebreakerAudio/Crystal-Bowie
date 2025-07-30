@@ -193,12 +193,12 @@ void SpectrumAnalyser::createLinePath (juce::Path& p, const juce::Rectangle<floa
 
     auto oX = bounds.getX();
     auto oY = bounds.getY();
-    p.startNewSubPath(oX, oY + juce::jmap(juce::Decibels::gainToDecibels(smoothedData[0]), -96.0f, 0.0f, bounds.getBottom(), bounds.getY()));
+    p.startNewSubPath(oX, oY + juce::jmap(juce::Decibels::gainToDecibels(smoothedData[0]), dbMin, dbMax, bounds.getBottom(), bounds.getY()));
 
     for(int i = 1; i < smoothedData.size(); ++i)
     {
         auto xPos = i * width / size;
-        auto yPos = juce::jmap (juce::Decibels::gainToDecibels(smoothedData[i]), -96.0f, 0.0f, bounds.getBottom(), bounds.getY());
+        auto yPos = juce::jmap (juce::Decibels::gainToDecibels(smoothedData[i]), dbMin, dbMax, bounds.getBottom(), bounds.getY());
         p.lineTo(oX + xPos, oY + yPos);
     }
 
@@ -220,7 +220,7 @@ void SpectrumAnalyser::createBarPath (juce::Path& p, const juce::Rectangle<float
     juce::ignoreUnused(bounds);
 }
 
-void SpectrumAnalyser::setRange(float minimumFreq, float maximumFreq, int resolution, bool useLogScale)
+void SpectrumAnalyser::setFreqRange(float minimumFreq, float maximumFreq, int resolution, bool useLogScale)
 {
     outputData.resize(resolution);
     std::fill(outputData.begin(), outputData.end(), 0.0f);
@@ -234,6 +234,14 @@ void SpectrumAnalyser::setRange(float minimumFreq, float maximumFreq, int resolu
     else {
         scaleFactor = (maximumFreq - minimumFreq) / float(resolution - 1);
     }
+}
+
+void SpectrumAnalyser::setDecibelRange(float min, float max)
+{
+    jassert(min < max);
+
+    dbMin = min;
+    dbMax = max;
 }
 
 void SpectrumAnalyser::setLineSmoothing (int lineSmoothing)

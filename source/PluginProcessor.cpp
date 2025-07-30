@@ -143,7 +143,8 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     doubleProcessor.reset();
 
     spectrumProcessor.prepare(juce::roundToInt(sampleRate * 0.5), sampleRate);
-    spectrumProcessor.setRange(20.0f, 19500.0f, 200);
+    spectrumProcessor.setFreqRange(20.0f, 19500.0f, 200);
+    spectrumProcessor.setDecibelRange(-96.0f, 0.0f);
     spectrumProcessor.setLineSmoothing(9);
     spectrumProcessor.setDecayTime(1000.0f);
 
