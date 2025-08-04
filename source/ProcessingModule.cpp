@@ -185,8 +185,6 @@ void ProcessingModule<Type>::updateDelayTime()
     if(delayTime < zero) {
         delayTime = zero;
     }
-    DBG("Delay Time");
-    DBG(delayTime);
     delay.setDelay(delayTime);
 }
 

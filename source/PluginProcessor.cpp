@@ -152,7 +152,6 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     if(isUsingDoublePrecision())
     {
-        DBG("is Double");
         doubleProcessor = std::make_unique<ProcessingModule<double>>();
         doubleProcessor->prepare(numChannels, samplesPerBlock);
         doubleProcessor->setSampleRate(sampleRate);
@@ -168,7 +167,6 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     }
     else
     {
-        DBG("is Float");
         floatProcessor = std::make_unique<ProcessingModule<float>>();
         floatProcessor->prepare(numChannels, samplesPerBlock);
         floatProcessor->setSampleRate(sampleRate);
@@ -345,8 +343,6 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 void AudioPluginAudioProcessor::updateOverSampling()
 {
     auto osIndex = juce::roundToInt(loadRawParameterValue("OS"));
-    DBG("OS Index:");
-    DBG(osIndex);
 
     if(floatProcessor) {
         floatProcessor->setOverSampleIndex(osIndex);

@@ -149,7 +149,6 @@ juce::Font CustomLookAndFeel::getComboBoxFont (juce::ComboBox& box)
 
 void CustomLookAndFeel::drawToggleButton (juce::Graphics& g, juce::ToggleButton& button, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
-    DBG((float) button.getHeight() * 0.4f);
     auto fontSize = (float) button.getHeight() * 0.4f;
     auto tickWidth = fontSize * 1.1f;
 
