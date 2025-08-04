@@ -77,7 +77,6 @@ void ProcessingModule<Type>::processBlock(juce::dsp::AudioBlock<Type>& block)
         posGainIn = one / posGainOut;
 
         driveGain = driveGainSm.getNextValue();
-        driveHighGain = driveHighGainSm.getNextValue();
         driveOutGain = driveOutGainSm.getNextValue();
         passbandGain = passbandGainSm.getNextValue();
         mix = mixSm.getNextValue();
@@ -142,7 +141,6 @@ Type ProcessingModule<Type>::processSample(Type sample, int channel)
     mid = cleanMid + ((mid - cleanMid) * mix);
     low *= one + ((passbandGain - one) * mix);
     high *= one + ((passbandGain - one) * mix);
-    high *= one + ((driveHighGain - one) * mix);
 
     return low + mid + high;
 }
@@ -245,17 +243,14 @@ void ProcessingModule<Type>::setDrive(Type driveAmountDecibels)
 {
     auto gain = juce::Decibels::decibelsToGain(driveAmountDecibels);
     auto gainComp = one;
-    auto highGain = one;
     if(gain >= one) {
         gainComp = one / std::log(gain * std::numbers::e_v<Type>);
-        highGain = juce::Decibels::decibelsToGain(driveAmountDecibels * static_cast<Type>(0.1875));
     }
     else {
         gainComp = one / gain;
     }
 
     driveGainSm.setTargetValue(gain);
-    driveHighGainSm.setTargetValue(highGain);
     driveOutGainSm.setTargetValue(gainComp);
 }
 
@@ -282,7 +277,6 @@ void ProcessingModule<Type>::resetSmoothers()
     posThresholdSm.reset(sampleRate, smoothingTimeMs * 0.001);
     passbandGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
     driveGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
-    driveHighGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
     driveOutGainSm.reset(sampleRate, smoothingTimeMs * 0.001);
     mixSm.reset(sampleRate, smoothingTimeMs * 0.001);
 }
@@ -336,7 +330,6 @@ void ProcessingModule<float>::drawPath(juce::Path& p, juce::Rectangle<float> bou
             value *= posGainOut;
             value = std::sqrt(value);
         }
-        // value *= driveOutGain;
 
         auto y = juce::jmap(value, -scale, scale, height, 0.0f);
 

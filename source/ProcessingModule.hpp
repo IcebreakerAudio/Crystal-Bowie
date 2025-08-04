@@ -79,8 +79,8 @@ private:
 
     juce::LinearSmoothedValue<double> xOverFreqLowSm, xOverFreqHighSm;
     juce::LinearSmoothedValue<Type> negThresholdSm {one}, posThresholdSm {one};
-    juce::LinearSmoothedValue<Type> driveGainSm {one}, driveHighGainSm {one}, driveOutGainSm {one}, mixSm {one}, passbandGainSm {one};
-    Type negGainIn {one}, negGainOut {one}, posGainIn {one}, posGainOut {one}, driveGain {one}, driveOutGain {one}, driveHighGain {one}, mix {one}, passbandGain {one};
+    juce::LinearSmoothedValue<Type> driveGainSm {one}, driveOutGainSm {one}, mixSm {one}, passbandGainSm {one};
+    Type negGainIn {one}, negGainOut {one}, posGainIn {one}, posGainOut {one}, driveGain {one}, driveOutGain {one}, mix {one}, passbandGain {one};
     int osIndex = 0, osFactor = 1;
     int negClipIndex = 0, posClipIndex = 0;
 
