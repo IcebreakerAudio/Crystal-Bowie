@@ -75,7 +75,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     layout.add(std::make_unique<juce::AudioParameterFloat>(
                 juce::ParameterID{ "sym", 1 },
                 "Symmetry",
-                juce::NormalisableRange<float>(-100.0f, 100.0f),
+                juce::NormalisableRange<float>(-100.0f, 100.0f, 0.01f),
                 0.0f,
                 juce::AudioParameterFloatAttributes()
                 ));
@@ -92,9 +92,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
             // convert to 0 to 1
             auto factor = std::log(currentRangeEnd / currentRangeStart);
             return std::log(value / currentRangeStart) / factor;
-        },
-        {}
+        }
     );
+    freqRange.interval = 0.01f;
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
                 juce::ParameterID{ "xOverLow", 1 },
@@ -120,7 +120,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     layout.add(std::make_unique<juce::AudioParameterFloat>(
                 juce::ParameterID{ "mix", 1 },
                 "Mix",
-                juce::NormalisableRange<float>(0.0f, 100.0f),
+                juce::NormalisableRange<float>(0.0f, 100.0f, 0.01f),
                 100.0f,
                 juce::AudioParameterFloatAttributes().withLabel("%")
                 ));
@@ -129,7 +129,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 juce::ParameterID{ "OS", 1 },
                 "Oversampling",
                 juce::StringArray{ "Off", "x2", "x4", "x8", "x16" },
-                1));
+                1,
+                juce::AudioParameterChoiceAttributes().withAutomatable(false)));
 
     return layout;
 }
