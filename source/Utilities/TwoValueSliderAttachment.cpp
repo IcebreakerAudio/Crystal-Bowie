@@ -1,15 +1,22 @@
 #include "TwoValueSliderAttachment.hpp"
 
-
 void TwoValueSliderAttachment::setMinValue (float newValue)
 {
     const juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
+    auto maxValue = static_cast<float>(slider.getMaxValue());
+    if(newValue > maxValue) {
+        newValue = maxValue;
+    }
     slider.setMinValue (newValue, juce::sendNotificationSync);
 }
 
 void TwoValueSliderAttachment::setMaxValue (float newValue)
 {
     const juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
+    auto minValue = static_cast<float>(slider.getMinValue());
+    if(newValue < minValue) {
+        newValue = minValue;
+    }
     slider.setMaxValue (newValue, juce::sendNotificationSync);
 }
     
@@ -19,34 +26,20 @@ void TwoValueSliderAttachment::sliderValueChanged(juce::Slider* s)
         return;
     }
 
-    thumbBeingDragged = s->getThumbBeingDragged();
-    if (thumbBeingDragged == 1) {
-        minAttachment.setValueAsPartOfGesture (static_cast<float>(s->getMinValue()));
-    }
-    else if (thumbBeingDragged == 2) {
-        maxAttachment.setValueAsPartOfGesture (static_cast<float>(s->getMaxValue()));
-    }
+    minAttachment.setValueAsPartOfGesture (static_cast<float>(s->getMinValue()));
+    maxAttachment.setValueAsPartOfGesture (static_cast<float>(s->getMaxValue()));
 }
 
-void TwoValueSliderAttachment::sliderDragStarted(juce::Slider* s)
+void TwoValueSliderAttachment::sliderDragStarted([[maybe_unused]] juce::Slider* s)
 {
-    thumbBeingDragged = s->getThumbBeingDragged();
-    if (thumbBeingDragged == 1) {
-        minAttachment.beginGesture();
-    }
-    else if (thumbBeingDragged == 2) {
-        maxAttachment.beginGesture();
-    }
+    minAttachment.beginGesture();
+    maxAttachment.beginGesture();
 }
 
 void TwoValueSliderAttachment::sliderDragEnded([[maybe_unused]] juce::Slider* s)
 {
-    if (thumbBeingDragged == 1) {
-        minAttachment.endGesture();
-    }
-    else if (thumbBeingDragged == 2) {
-        maxAttachment.endGesture();
-    }
+    minAttachment.endGesture();
+    maxAttachment.endGesture();
 }
 
 TwoValueSliderAttachment::TwoValueSliderAttachment(juce::Slider& s, juce::RangedAudioParameter& min, juce::RangedAudioParameter& max, juce::UndoManager* um)

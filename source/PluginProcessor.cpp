@@ -362,7 +362,7 @@ void AudioPluginAudioProcessor::updateMainParameters()
 
     auto lowFreq = static_cast<double>(loadRawParameterValue("xOverLow"));
     auto highFreq = static_cast<double>(loadRawParameterValue("xOverHigh"));
-    auto pbLevel = loadRawParameterValue("filter") > 0.5f ? -96.0f : 0.0f;
+    auto pbLevel = loadRawParameterValue("filter") > 0.5f ? -120.0f : 0.0f;
     auto mix = loadRawParameterValue("mix") * 0.01f;
 
     if(!active) {

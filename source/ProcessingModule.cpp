@@ -232,8 +232,19 @@ void ProcessingModule<Type>::setThresholds(Type newNegativeThreshold, Type newPo
 template<typename Type>
 void ProcessingModule<Type>::setCrossoverFrequencies(double low, double high)
 {
-    xOverFreqLowSm.setTargetValue(low);
-    xOverFreqHighSm.setTargetValue(high);
+    if(low != xOverFreqLowSm.getTargetValue()) {
+        if(low > high) {
+            low = high;
+        }
+        xOverFreqLowSm.setTargetValue(low);
+    }
+    
+    if(high != xOverFreqHighSm.getTargetValue()) {
+        if(high < low) {
+            high = low;
+        }
+        xOverFreqHighSm.setTargetValue(high);
+    }
 }
 
 template<typename Type>
