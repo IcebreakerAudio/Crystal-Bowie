@@ -3,9 +3,9 @@ An audio plugin for creating a simple customizable clipper.
 ## Overview
 Over the years I have collected a few different clipping algoithms that all more or less accomplish the same thing, but with slight variations - mostly in the shape of the *knee* (or curve) of the soft clipping.
 
-So I created __Crystal Bowie__ as a way to quickly compare them in a neat little interface with some additional features to make is useful in production applications as well.
+So I created __Crystal Bowie__ as a way to quickly compare them in a neat little interface with some additional features to make it useful in production applications as well.
 
-None of these algorithms are new or groundbreaking, but I haven't seen them put together for comparison in a handy tool, so here it is.
+None of these algorithms are new or groundbreaking, but I just wanted to group them together for comparison in a handy tool, so here it is.
 
 ## The Plugin
 
