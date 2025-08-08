@@ -50,7 +50,7 @@ juce_add_plugin("${PROJECT_NAME}"
     PLUGIN_MANUFACTURER_CODE IceB
 
     # A unique four-character plugin id. This must have at least one upper-case character
-    PLUGIN_CODE IASO
+    PLUGIN_CODE IACB
 
     FORMATS "${FORMATS}"
 
@@ -64,7 +64,7 @@ juce_add_plugin("${PROJECT_NAME}"
     NEEDS_MIDI_INPUT FALSE
 
     # VST3 Categories
-    VST3_CATEGORIES Fx
+    VST3_CATEGORIES Fx Distortion
 
     # LV2 URI
     LV2URI "urn://${BUNDLE_ID}"
