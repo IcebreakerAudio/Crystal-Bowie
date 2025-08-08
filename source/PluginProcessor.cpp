@@ -42,7 +42,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     layout.add(std::make_unique<juce::AudioParameterBool>(
                 juce::ParameterID{ "active", 1 },
                 "On/Off",
-                true));
+                true
+                ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
                 juce::ParameterID{ "drive", 1 },
@@ -142,6 +143,8 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     floatProcessor.reset();
     doubleProcessor.reset();
+    doubleDelay.reset();
+    floatDelay.reset();
 
     spectrumProcessor.prepare(juce::roundToInt(sampleRate * 0.5), sampleRate);
     spectrumProcessor.setFreqRange(20.0f, 19500.0f, 200);
@@ -331,9 +334,12 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
     // Restore
     auto xml = getXmlFromBinary(data, sizeInBytes);
 
-    interfaceSizeRatio = static_cast<float>(xml->getDoubleAttribute("SizeRatio", 1.0));
-    xml->removeAttribute("SizeRatio");
-    updateInterface.store(true);
+    if(xml->hasAttribute("SizeRatio"))
+    {
+        interfaceSizeRatio = static_cast<float>(xml->getDoubleAttribute("SizeRatio", 1.0));
+        xml->removeAttribute("SizeRatio");
+        updateInterface.store(true);
+    }
 
     auto copyState = juce::ValueTree::fromXml(*xml.get());
     apvts.replaceState(copyState);
