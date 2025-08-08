@@ -8,7 +8,7 @@ class TwoValueSliderAttachment : private juce::Slider::Listener
 public:
 
     TwoValueSliderAttachment(juce::Slider& s, juce::RangedAudioParameter& min, juce::RangedAudioParameter& max, juce::UndoManager* um = nullptr);
-    ~TwoValueSliderAttachment();
+    ~TwoValueSliderAttachment() override;
     
     void sendInitialUpdate();
 

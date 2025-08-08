@@ -152,7 +152,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     spectrumProcessor.setLineSmoothing(9);
     spectrumProcessor.setDecayTime(1000.0f);
 
-    auto spec = juce::dsp::ProcessSpec(sampleRate, samplesPerBlock, numChannels);
+    juce::dsp::ProcessSpec spec {sampleRate, juce::uint32(samplesPerBlock), juce::uint32(numChannels)};
 
     if(isUsingDoublePrecision())
     {

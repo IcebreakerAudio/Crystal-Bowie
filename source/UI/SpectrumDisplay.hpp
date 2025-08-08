@@ -9,8 +9,8 @@ public:
     {
         addAndMakeVisible(background);
         addAndMakeVisible(display);
-    };
-    ~SpectrumDisplay() override {};
+    }
+    ~SpectrumDisplay() override {}
 
     void paint (juce::Graphics& g) override { juce::ignoreUnused(g); }
 
@@ -33,8 +33,8 @@ private:
 
     struct BackgroundComponent : public juce::Component
     {
-        BackgroundComponent() { setBufferedToImage(true); };
-        ~BackgroundComponent() override {};
+        BackgroundComponent() { setBufferedToImage(true); }
+        ~BackgroundComponent() override {}
 
         void paint (juce::Graphics& g) override
         {
@@ -83,8 +83,8 @@ private:
 
     struct DisplayComponent : public juce::Component
     {
-        DisplayComponent() {};
-        ~DisplayComponent() override {};
+        DisplayComponent() {}
+        ~DisplayComponent() override {}
         
         void paint (juce::Graphics& g) override
         {
