@@ -125,6 +125,7 @@ void AudioPluginAudioProcessorEditor::resized()
     bounds.removeFromTop(juce::roundToInt(12.0f * resizeRatio));
     auto graphBounds = bounds.removeFromTop(width * 8 / 10);
     transformDisplay.setBounds(graphBounds);
+    transformDisplay.updateDisplay();
     bounds.removeFromTop(juce::roundToInt(10.0f * resizeRatio));
 
     auto menuBounds = bounds.removeFromTop(height / 22);
