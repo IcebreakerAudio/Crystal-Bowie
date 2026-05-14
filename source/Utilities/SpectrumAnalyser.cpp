@@ -1,4 +1,3 @@
-#pragma once
 #include "SpectrumAnalyser.hpp"
 
 SpectrumAnalyser::SpectrumAnalyser(int fftOrder, bool useMultiResolution)
@@ -62,7 +61,7 @@ void SpectrumAnalyser::prepare (int audioFifoSize, double sampleRate)
     {
         halfSampleFilter.setResamplingRatio(2.0);
         halfSampleFilter.prepare(1, fftSize);
-        bassStreamFiFo.setSize(audioFifoSize);
+        bassStreamFifo.setSize(audioFifoSize);
         bassBuffer.resize(fftSize);
     }
 
@@ -98,7 +97,7 @@ void SpectrumAnalyser::run()
                 if(useHQBass)
                 {
                     halfSampleFilter.processMono(fftProcessBuffer, bassBuffer, fftSize);
-                    bassStreamFiFo.addToFifo(bassBuffer.data(), fftSize / 2);
+                    bassStreamFifo.addToFifo(bassBuffer.data(), fftSize / 2);
                 }
             }
             audioStreamFifo.reset();
@@ -129,10 +128,10 @@ void SpectrumAnalyser::run()
             newDataAvailable = true;
         }
 
-        if (useHQBass && bassStreamFiFo.getSizeToRead() >= fftSize)
+        if (useHQBass && bassStreamFifo.getSizeToRead() >= fftSize)
         {
-            while(bassStreamFiFo.getSizeToRead() >= fftSize) {
-                bassStreamFiFo.readFromFifo(fftProcessBuffer.data(), fftSize);
+            while(bassStreamFifo.getSizeToRead() >= fftSize) {
+                bassStreamFifo.readFromFifo(fftProcessBuffer.data(), fftSize);
             }
 
             windowing.multiplyWithWindowingTable(fftProcessBuffer.data(), size_t (fftSize));
@@ -252,7 +251,7 @@ void SpectrumAnalyser::setLineSmoothing (int lineSmoothing)
     {
         kernelSize = 0;
         kernelWeights.clear();
-        smoothedData.clear();
+        std::fill(smoothedData.begin(), smoothedData.end(), 0.0f);
         
         return;
     }

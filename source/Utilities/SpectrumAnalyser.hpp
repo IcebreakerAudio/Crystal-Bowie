@@ -50,7 +50,7 @@ private:
 
     inline float frequencyToBin (float freq) const
     {
-        if(freq > internalSampleRate || freq < 0.0f) {
+        if(freq > internalSampleRate * 0.5f || freq < 0.0f) {
             return -1.0f;
         }
 
@@ -85,6 +85,7 @@ private:
 
         if(!useSmoothing) {
             std::copy_n(source.begin(), source.size(), dest.begin());
+            return;
         }
 
         const int kernelRadius = (kernelSize - 1) / 2;
@@ -130,7 +131,7 @@ private:
 
     std::vector<float> fftInBuffer, fftProcessBuffer, bassBuffer;
     std::vector<float> outputData { 128 }, smoothedData { 128 };
-    Fifo<float> audioStreamFifo, bassStreamFiFo;
+    Fifo<float> audioStreamFifo, bassStreamFifo;
 
     bool useSmoothing = false;
     std::vector<float> kernelWeights;

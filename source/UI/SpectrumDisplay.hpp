@@ -10,7 +10,7 @@ public:
         addAndMakeVisible(background);
         addAndMakeVisible(display);
     }
-    ~SpectrumDisplay() override {}
+    ~SpectrumDisplay() override = default;
 
     void paint (juce::Graphics& g) override { juce::ignoreUnused(g); }
 
@@ -27,6 +27,7 @@ public:
     {
         background.freqRange = range;
         background.rangeSet = true;
+        background.repaint();
     }
 
 private:
@@ -34,7 +35,7 @@ private:
     struct BackgroundComponent : public juce::Component
     {
         BackgroundComponent() { setBufferedToImage(true); }
-        ~BackgroundComponent() override {}
+        ~BackgroundComponent() override = default;
 
         void paint (juce::Graphics& g) override
         {
@@ -74,26 +75,19 @@ private:
             g.drawRect(bounds.reduced(0.5f));
         }
 
-        void resized() override
-        {}
-
         juce::NormalisableRange<float> freqRange;
         bool rangeSet = false;
     };
 
     struct DisplayComponent : public juce::Component
     {
-        DisplayComponent() {}
-        ~DisplayComponent() override {}
-        
+        ~DisplayComponent() override = default;
+
         void paint (juce::Graphics& g) override
         {
             g.setColour(juce::Colours::lightgrey.withAlpha(0.75f));
             g.strokePath(path, juce::PathStrokeType{1.5f}, {});
         }
-
-        void resized() override
-        {}
 
         juce::Path path;
     };
