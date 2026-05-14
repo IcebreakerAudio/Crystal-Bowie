@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "Utilities/SymmetryHelper.hpp"
 
 //==============================================================================
 // This creates new instances of the plugin..
@@ -397,16 +398,7 @@ void AudioPluginAudioProcessor::updateClippingParameters()
     auto posIndex = juce::roundToInt(loadRawParameterValue("modePos"));
     auto negIndex = juce::roundToInt(loadRawParameterValue("modeNeg"));
 
-    auto symmetry = loadRawParameterValue("sym") * 0.009f;
-    auto negThresh = -1.0f;
-    auto posThresh = 1.0f;
-
-    if(symmetry < 0.0f) {
-        posThresh = 1.0f + symmetry;
-    }
-    else {
-        negThresh = symmetry - 1.0f;
-    }
+    auto [negThresh, posThresh] = SymmetryHelper::toThresholds(loadRawParameterValue("sym"));
     
     auto drive = loadRawParameterValue("drive");
 

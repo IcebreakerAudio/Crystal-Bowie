@@ -2,6 +2,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../ProcessingModule.hpp"
+#include "../Utilities/SymmetryHelper.hpp"
 
 class TransformDisplay : public juce::Component
 {
@@ -11,12 +12,9 @@ public:
         addAndMakeVisible(background);
         addAndMakeVisible(display);
     }
-    ~TransformDisplay() override {}
+    ~TransformDisplay() override = default;
 
-    void paint (juce::Graphics& g) override
-    {
-        juce::ignoreUnused(g);
-    }
+    void paint (juce::Graphics&) override{}
 
     void resized() override
     {
@@ -31,17 +29,7 @@ public:
 
     void setSymmetry(float newSymmetry)
     {
-        auto symmetry = newSymmetry * 0.009f;
-        auto negThresh = -1.0f;
-        auto posThresh = 1.0f;
-
-        if(symmetry < 0.0f) {
-            posThresh = 1.0f + symmetry;
-        }
-        else {
-            negThresh = symmetry - 1.0f;
-        }
-
+        auto [negThresh, posThresh] = SymmetryHelper::toThresholds(newSymmetry);
         processor.setThresholds(negThresh, posThresh);
     }
 
@@ -58,21 +46,21 @@ public:
 
     void setMinMax(float min, float max)
     {
-        min = std::sqrt(std::abs(min/ scale));
-        max = std::sqrt(max/ scale);
+        min = std::sqrt(std::abs(min / scale));
+        max = std::sqrt(max / scale);
 
-        if(min > scopeMin) {
+        if (min > scopeMin) {
             scopeMin = min;
         }
         else {
-            scopeMin *= 0.95f;
+            scopeMin *= scopeDecay;
         }
 
-        if(max > scopeMax) {
+        if (max > scopeMax) {
             scopeMax = max;
         }
         else {
-            scopeMax *= 0.95f;
+            scopeMax *= scopeDecay;
         }
 
         min = 0.5f - (scopeMin * 0.5f);
@@ -89,18 +77,21 @@ public:
 
 private:
 
-    const float scale = 1.25f;
+    static constexpr float scale = 1.25f;
+    static constexpr float scopeDecay = 0.95f;
 
     struct BackgroundComponent : public juce::Component
     {
         BackgroundComponent() { setBufferedToImage(true); }
-        ~BackgroundComponent() override {}
+        ~BackgroundComponent() override = default;
+
         void paint (juce::Graphics& g) override
         {
             g.fillAll(juce::Colours::black.withAlpha(0.25f));
 
             const auto bounds = getLocalBounds().toFloat();
-            auto reducedBounds = bounds.withSizeKeepingCentre(bounds.getWidth() / scale, bounds.getHeight() / scale);
+            auto reducedBounds = bounds.withSizeKeepingCentre(bounds.getWidth()  / TransformDisplay::scale,
+                                                              bounds.getHeight() / TransformDisplay::scale);
 
             g.setColour(juce::Colours::lightgrey.withAlpha(0.75f));
 
@@ -112,7 +103,8 @@ private:
             for(int i = 0; i < 9; ++i)
             {
                 auto factor = static_cast<float>(i) / 8.0f;
-                for(int k = 0; k < (i % 2) + 1; ++k) {
+                for(int k = 0; k < (i % 2) + 1; ++k)
+                {
                     float size = k % 2 == 0 ? 1.0f : 2.0f;
                     g.fillRect(juce::Rectangle<float>(reducedBounds.getX() + (reducedBounds.getWidth() * factor) - (size * 0.5f), bounds.getY(), size, bounds.getHeight()));
                     g.fillRect(juce::Rectangle<float>(bounds.getX(), reducedBounds.getY() + (reducedBounds.getHeight() * factor) - (size * 0.5f), bounds.getWidth(), size));
@@ -122,17 +114,11 @@ private:
             g.setColour(juce::Colours::lightgrey);
             g.drawRect(bounds.reduced(0.5f));
         }
-
-        void resized() override
-        {}
-
-        float scale = 1.25f;
     };
 
     struct DisplayComponent : public juce::Component
     {
-        DisplayComponent() {}
-        ~DisplayComponent() override {}
+        ~DisplayComponent() override = default;
 
         void paint (juce::Graphics& g) override
         {
@@ -153,9 +139,6 @@ private:
             g.setColour(juce::Colours::white);
             g.strokePath(path, juce::PathStrokeType(2.5f));
         }
-
-        void resized() override
-        {}
 
         juce::Path path;
         float highlightMin = 0.5f, highlightMax = 0.5f;
