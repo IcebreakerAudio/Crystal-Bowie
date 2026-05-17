@@ -41,13 +41,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     layout.add(std::make_unique<juce::AudioParameterBool>(
-                juce::ParameterID{ "active", 1 },
+                juce::ParameterID{ ParameterIDs::active, 1 },
                 "On/Off",
                 true
                 ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID{ "drive", 1 },
+                juce::ParameterID{ ParameterIDs::drive, 1 },
                 "Drive",
                 juce::NormalisableRange<float>(-12.0f, 48.0f, 0.01f, 1.5f),
                 0.0f,
@@ -55,7 +55,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID{ "outGain", 1 },
+                juce::ParameterID{ ParameterIDs::outGain, 1 },
                 "Output",
                 juce::NormalisableRange<float>(-60.0f, 12.0f, 0.01f, 1.5f),
                 0.0f,
@@ -63,19 +63,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 ));
 
     layout.add(std::make_unique<juce::AudioParameterChoice>(
-                juce::ParameterID{ "modePos", 1 },
+                juce::ParameterID{ ParameterIDs::modePos, 1 },
                 "Clip Mode +",
                 Clipper::Names,
                 0));
 
     layout.add(std::make_unique<juce::AudioParameterChoice>(
-                juce::ParameterID{ "modeNeg", 1 },
+                juce::ParameterID{ ParameterIDs::modeNeg, 1 },
                 "Clip Mode -",
                 Clipper::Names,
                 0));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID{ "sym", 1 },
+                juce::ParameterID{ ParameterIDs::sym, 1 },
                 "Symmetry",
                 juce::NormalisableRange<float>(-100.0f, 100.0f, 0.01f),
                 0.0f,
@@ -99,7 +99,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     freqRange.interval = 0.01f;
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID{ "xOverLow", 1 },
+                juce::ParameterID{ ParameterIDs::xOverLow, 1 },
                 "Low Crossover",
                 freqRange,
                 200.0f,
@@ -107,7 +107,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID{ "xOverHigh", 1 },
+                juce::ParameterID{ ParameterIDs::xOverHigh, 1 },
                 "High Crossover",
                 freqRange,
                 5000.0f,
@@ -115,12 +115,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 ));
 
     layout.add(std::make_unique<juce::AudioParameterBool>(
-                juce::ParameterID{ "filter", 1 },
+                juce::ParameterID{ ParameterIDs::filter, 1 },
                 "Mute High/Low",
                 false));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID{ "mix", 1 },
+                juce::ParameterID{ ParameterIDs::mix, 1 },
                 "Mix",
                 juce::NormalisableRange<float>(0.0f, 100.0f, 0.01f),
                 100.0f,
@@ -128,7 +128,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 ));
 
     layout.add(std::make_unique<juce::AudioParameterChoice>(
-                juce::ParameterID{ "OS", 1 },
+                juce::ParameterID{ ParameterIDs::OS, 1 },
                 "Oversampling",
                 juce::StringArray{ "Off", "x2", "x4", "x8", "x16" },
                 1,
@@ -315,7 +315,6 @@ bool AudioPluginAudioProcessor::hasEditor() const
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
     return new AudioPluginAudioProcessorEditor (*this);
-    // return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -334,6 +333,10 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 {
     // Restore
     auto xml = getXmlFromBinary(data, sizeInBytes);
+
+    if (xml == nullptr) {
+        return;
+    }
 
     if(xml->hasAttribute("SizeRatio"))
     {
@@ -365,28 +368,24 @@ void AudioPluginAudioProcessor::updateMainParameters()
 {
     auto active = loadRawParameterValue(ParameterIDs::active) > 0.5f;
 
-    auto outGain = juce::Decibels::decibelsToGain(loadRawParameterValue(ParameterIDs::outGain));
-
     auto lowFreq  = static_cast<double>(loadRawParameterValue(ParameterIDs::xOverLow));
     auto highFreq = static_cast<double>(loadRawParameterValue(ParameterIDs::xOverHigh));
     auto pbLevel  = loadRawParameterValue(ParameterIDs::filter) > 0.5f ? -120.0f : 0.0f;
-    auto mix      = loadRawParameterValue(ParameterIDs::mix) * 0.01f;
-
-    if(!active) {
-        outGain = 1.0f;
-        mix = 0.0f;
-    }
+    auto mix = active ? loadRawParameterValue(ParameterIDs::mix) * 0.01f : 0.0f;
+    auto outGain = active ? juce::Decibels::decibelsToGain(loadRawParameterValue(ParameterIDs::outGain)) : 1.0f;
 
     floatGainSmoother.setTargetValue(outGain);
     doubleGainSmoother.setTargetValue(static_cast<double>(outGain));
 
-    if(floatProcessor) {
+    if(floatProcessor)
+    {
         floatProcessor->setCrossoverFrequencies(lowFreq, highFreq);
         floatProcessor->setPassBandLevel(pbLevel);
         floatProcessor->setMix(mix);
     }
 
-    if(doubleProcessor) {
+    if(doubleProcessor)
+    {
         doubleProcessor->setCrossoverFrequencies(lowFreq, highFreq);
         doubleProcessor->setPassBandLevel(static_cast<double>(pbLevel));
         doubleProcessor->setMix(static_cast<double>(mix));
@@ -402,13 +401,15 @@ void AudioPluginAudioProcessor::updateClippingParameters()
 
     auto drive = loadRawParameterValue(ParameterIDs::drive);
 
-    if(floatProcessor) {
+    if(floatProcessor)
+    {
         floatProcessor->setClippingToUse(negIndex, posIndex);
         floatProcessor->setThresholds(negThresh, posThresh);
         floatProcessor->setDrive(drive);
     }
 
-    if(doubleProcessor) {
+    if(doubleProcessor)
+    {
         doubleProcessor->setClippingToUse(negIndex, posIndex);
         doubleProcessor->setThresholds(negThresh, posThresh);
         doubleProcessor->setDrive(drive);

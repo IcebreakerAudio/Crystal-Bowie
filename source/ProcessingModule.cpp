@@ -317,12 +317,7 @@ void ProcessingModule<float>::drawPath(juce::Path& p, juce::Rectangle<float> bou
     {
         auto x = float(i) * width / float(numPoints);
         auto value = (x * 2.0f / width) - 1.0f;
-        if(value < 0.0f) {
-            value *= -value;
-        }
-        else {
-            value *= value;
-        }
+        value = std::copysign(value * value, value);
 
         value *= scale;
         value *= driveGain;

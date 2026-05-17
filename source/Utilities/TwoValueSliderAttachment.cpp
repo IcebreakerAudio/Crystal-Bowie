@@ -47,10 +47,6 @@ TwoValueSliderAttachment::TwoValueSliderAttachment(juce::Slider& s, juce::Ranged
                           minAttachment(min, [this] (float f) { setMinValue (f); }, um),
                           maxAttachment(max, [this] (float f) { setMaxValue (f); }, um)
 {
-    // slider.valueFromTextFunction = [&min] (const juce::String& text) { return (double) min.convertFrom0to1 (min.getValueForText (text)); };
-    // slider.textFromValueFunction = [&min] (double value) { return min.getText (min.convertTo0to1 ((float) value), 0); };
-    // slider.setDoubleClickReturnValue (true, min.convertFrom0to1 (min.getDefaultValue()));
-
     auto range = min.getNormalisableRange();
 
     auto convertFrom0To1Function = [range] (double currentRangeStart,

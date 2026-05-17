@@ -80,10 +80,10 @@ public:
 
     std::atomic<bool> updateInterface { false };
     float getSizeRatio() {
-        return interfaceSizeRatio;
+        return interfaceSizeRatio.load();
     }
     void setSizeRatio(float ratio) {
-        interfaceSizeRatio = ratio;
+        interfaceSizeRatio.store(ratio);
     }
 
 private:
@@ -117,7 +117,7 @@ private:
     //==============================================================================
 
     std::atomic<float> min {0.0f}, max {0.0f};
-    float interfaceSizeRatio = 1.0f;
+    std::atomic<float> interfaceSizeRatio { 1.0f };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
