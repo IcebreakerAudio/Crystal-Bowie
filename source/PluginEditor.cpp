@@ -11,19 +11,25 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     background = juce::Drawable::createFromImageData(BinaryData::Background_svg, BinaryData::Background_svgSize);
     addAndMakeVisible(background.get());
 
+    auto getParam = [&](const char* id) -> juce::RangedAudioParameter& {
+        auto* p = processorRef.apvts.getParameter(id);
+        jassert(p != nullptr);
+        return *p;
+    };
+
     for(int i = 0; i < 2; ++i)
     {
         auto m = menus.add(std::make_unique<juce::ComboBox>());
         m->addItemList(Clipper::Names, 1);
         addAndMakeVisible(m);
     }
-    menuAttachments.add(new juce::ComboBoxParameterAttachment(*(processorRef.apvts.getParameter("modeNeg")), *(menus[clipModeNeg_MenuId])));
-    menuAttachments.add(new juce::ComboBoxParameterAttachment(*(processorRef.apvts.getParameter("modePos")), *(menus[clipModePos_MenuId])));
-    
+    menuAttachments.add(std::make_unique<juce::ComboBoxParameterAttachment>(getParam(ParameterIDs::modeNeg), *menus[clipModeNeg_MenuId]));
+    menuAttachments.add(std::make_unique<juce::ComboBoxParameterAttachment>(getParam(ParameterIDs::modePos), *menus[clipModePos_MenuId]));
+
     auto m = menus.add(std::make_unique<juce::ComboBox>());
     m->addItemList(juce::StringArray{ "HQ Off", "HQ x2", "HQ x4", "HQ x8", "HQ x16" }, 1);
     addAndMakeVisible(m);
-    menuAttachments.add(new juce::ComboBoxParameterAttachment(*(processorRef.apvts.getParameter("OS")), *m));
+    menuAttachments.add(std::make_unique<juce::ComboBoxParameterAttachment>(getParam(ParameterIDs::OS), *m));
 
     const juce::StringArray labelText { "Drive:", "Sym:", "Mix:", "Level:" };
     for(int i = 0; i < numSliders; ++i)
@@ -37,17 +43,17 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         l->setBorderSize(juce::BorderSize<int>{0});
         addAndMakeVisible(l);
     }
-    sliderAttachments.add(new juce::SliderParameterAttachment(*(processorRef.apvts.getParameter("drive")), *(sliders[drive_SliderId])));
-    sliderAttachments.add(new juce::SliderParameterAttachment(*(processorRef.apvts.getParameter("sym")), *(sliders[symmetry_SliderId])));
-    sliderAttachments.add(new juce::SliderParameterAttachment(*(processorRef.apvts.getParameter("mix")), *(sliders[mix_SliderId])));
-    sliderAttachments.add(new juce::SliderParameterAttachment(*(processorRef.apvts.getParameter("outGain")), *(sliders[level_SliderId])));
+    sliderAttachments.add(std::make_unique<juce::SliderParameterAttachment>(getParam(ParameterIDs::drive),   *sliders[drive_SliderId]));
+    sliderAttachments.add(std::make_unique<juce::SliderParameterAttachment>(getParam(ParameterIDs::sym),     *sliders[symmetry_SliderId]));
+    sliderAttachments.add(std::make_unique<juce::SliderParameterAttachment>(getParam(ParameterIDs::mix),     *sliders[mix_SliderId]));
+    sliderAttachments.add(std::make_unique<juce::SliderParameterAttachment>(getParam(ParameterIDs::outGain), *sliders[level_SliderId]));
 
-    spectrumDisplay.setRange(processorRef.apvts.getParameter("xOverLow")->getNormalisableRange());
+    spectrumDisplay.setRange(getParam(ParameterIDs::xOverLow).getNormalisableRange());
     addAndMakeVisible(spectrumDisplay);
     addAndMakeVisible(transformDisplay);
 
     filterSlider.setColour(juce::Slider::ColourIds::backgroundColourId, juce::Colours::black.withAlpha(0.5f));
-    filterSliderAttachment = std::make_unique<TwoValueSliderAttachment>(filterSlider, *(processorRef.apvts.getParameter("xOverLow")), *(processorRef.apvts.getParameter("xOverHigh")));
+    filterSliderAttachment = std::make_unique<TwoValueSliderAttachment>(filterSlider, getParam(ParameterIDs::xOverLow), getParam(ParameterIDs::xOverHigh));
     addAndMakeVisible(filterSlider);
 
     auto onImage = juce::Drawable::createFromImageData(BinaryData::Power_On_svg, BinaryData::Power_On_svgSize);
@@ -55,16 +61,16 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     auto overImage = juce::Drawable::createFromImageData(BinaryData::Power_Over_svg, BinaryData::Power_Over_svgSize);
     powerButton.setImages(offImage.get(), overImage.get(), overImage.get(), nullptr, onImage.get());
     powerButton.setClickingTogglesState(true);
-    buttonAttachments.add(new juce::ButtonParameterAttachment(*(processorRef.apvts.getParameter("active")), powerButton));
+    buttonAttachments.add(std::make_unique<juce::ButtonParameterAttachment>(getParam(ParameterIDs::active), powerButton));
     addAndMakeVisible(powerButton);
-    
-    buttonAttachments.add(new juce::ButtonParameterAttachment(*(processorRef.apvts.getParameter("filter")), filterModeButton));
+
+    buttonAttachments.add(std::make_unique<juce::ButtonParameterAttachment>(getParam(ParameterIDs::filter), filterModeButton));
     addAndMakeVisible(filterModeButton);
 
-    sliders[drive_SliderId]->onValueChange = [&](){ transformParametersChanged = true; };
-    sliders[symmetry_SliderId]->onValueChange = [&](){ transformParametersChanged = true; };
-    menus[clipModeNeg_MenuId]->onChange = [&](){ transformParametersChanged = true; };
-    menus[clipModePos_MenuId]->onChange = [&](){ transformParametersChanged = true; };
+    sliders[drive_SliderId]->onValueChange = [this](){ transformParametersChanged = true; };
+    sliders[symmetry_SliderId]->onValueChange = [this](){ transformParametersChanged = true; };
+    menus[clipModeNeg_MenuId]->onChange = [this](){ transformParametersChanged = true; };
+    menus[clipModePos_MenuId]->onChange = [this](){ transformParametersChanged = true; };
 
     resizeRatio = processorRef.getSizeRatio();
     processorRef.updateInterface.store(false);
@@ -166,9 +172,9 @@ void AudioPluginAudioProcessorEditor::timerCallback()
     auto redraw = processorRef.spectrumProcessor.checkForNewData();
     if(redraw)
     {
-        auto& path = spectrumDisplay.getPath();
+        juce::Path path;
         processorRef.spectrumProcessor.createLinePath(path, spectrumDisplay.getLocalBounds().toFloat());
-        spectrumDisplay.update();
+        spectrumDisplay.updatePath(path);
     }
 
     if(transformParametersChanged)

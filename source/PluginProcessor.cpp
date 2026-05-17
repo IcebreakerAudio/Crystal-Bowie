@@ -16,19 +16,19 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
        apvts(*this, nullptr, "PARAMETERS", createParameters())
 {
-    apvts.addParameterListener("OS", &osParamListener);
-    
-    apvts.addParameterListener("modePos", &clippingParamListener);
-    apvts.addParameterListener("modeNeg", &clippingParamListener);
-    apvts.addParameterListener("sym", &clippingParamListener);
-    apvts.addParameterListener("drive", &clippingParamListener);
-    
-    apvts.addParameterListener("active", &mainParamListener);
-    apvts.addParameterListener("outGain", &mainParamListener);
-    apvts.addParameterListener("xOverLow", &mainParamListener);
-    apvts.addParameterListener("xOverHigh", &mainParamListener);
-    apvts.addParameterListener("filter", &mainParamListener);
-    apvts.addParameterListener("mix", &mainParamListener);
+    apvts.addParameterListener(ParameterIDs::OS, &osParamListener);
+
+    apvts.addParameterListener(ParameterIDs::modePos, &clippingParamListener);
+    apvts.addParameterListener(ParameterIDs::modeNeg, &clippingParamListener);
+    apvts.addParameterListener(ParameterIDs::sym,     &clippingParamListener);
+    apvts.addParameterListener(ParameterIDs::drive,   &clippingParamListener);
+
+    apvts.addParameterListener(ParameterIDs::active,    &mainParamListener);
+    apvts.addParameterListener(ParameterIDs::outGain,   &mainParamListener);
+    apvts.addParameterListener(ParameterIDs::xOverLow,  &mainParamListener);
+    apvts.addParameterListener(ParameterIDs::xOverHigh, &mainParamListener);
+    apvts.addParameterListener(ParameterIDs::filter,    &mainParamListener);
+    apvts.addParameterListener(ParameterIDs::mix,       &mainParamListener);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -350,7 +350,7 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 
 void AudioPluginAudioProcessor::updateOverSampling()
 {
-    auto osIndex = juce::roundToInt(loadRawParameterValue("OS"));
+    auto osIndex = juce::roundToInt(loadRawParameterValue(ParameterIDs::OS));
 
     if(floatProcessor) {
         floatProcessor->setOverSampleIndex(osIndex);
@@ -363,14 +363,14 @@ void AudioPluginAudioProcessor::updateOverSampling()
 
 void AudioPluginAudioProcessor::updateMainParameters()
 {
-    auto active = loadRawParameterValue("active") > 0.5f;
+    auto active = loadRawParameterValue(ParameterIDs::active) > 0.5f;
 
-    auto outGain = juce::Decibels::decibelsToGain(loadRawParameterValue("outGain"));
+    auto outGain = juce::Decibels::decibelsToGain(loadRawParameterValue(ParameterIDs::outGain));
 
-    auto lowFreq = static_cast<double>(loadRawParameterValue("xOverLow"));
-    auto highFreq = static_cast<double>(loadRawParameterValue("xOverHigh"));
-    auto pbLevel = loadRawParameterValue("filter") > 0.5f ? -120.0f : 0.0f;
-    auto mix = loadRawParameterValue("mix") * 0.01f;
+    auto lowFreq  = static_cast<double>(loadRawParameterValue(ParameterIDs::xOverLow));
+    auto highFreq = static_cast<double>(loadRawParameterValue(ParameterIDs::xOverHigh));
+    auto pbLevel  = loadRawParameterValue(ParameterIDs::filter) > 0.5f ? -120.0f : 0.0f;
+    auto mix      = loadRawParameterValue(ParameterIDs::mix) * 0.01f;
 
     if(!active) {
         outGain = 1.0f;
@@ -395,12 +395,12 @@ void AudioPluginAudioProcessor::updateMainParameters()
 
 void AudioPluginAudioProcessor::updateClippingParameters()
 {
-    auto posIndex = juce::roundToInt(loadRawParameterValue("modePos"));
-    auto negIndex = juce::roundToInt(loadRawParameterValue("modeNeg"));
+    auto posIndex = juce::roundToInt(loadRawParameterValue(ParameterIDs::modePos));
+    auto negIndex = juce::roundToInt(loadRawParameterValue(ParameterIDs::modeNeg));
 
-    auto [negThresh, posThresh] = SymmetryHelper::toThresholds(loadRawParameterValue("sym"));
-    
-    auto drive = loadRawParameterValue("drive");
+    auto [negThresh, posThresh] = SymmetryHelper::toThresholds(loadRawParameterValue(ParameterIDs::sym));
+
+    auto drive = loadRawParameterValue(ParameterIDs::drive);
 
     if(floatProcessor) {
         floatProcessor->setClippingToUse(negIndex, posIndex);

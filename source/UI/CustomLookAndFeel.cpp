@@ -26,9 +26,9 @@ CustomLookAndFeel::CustomLookAndFeel()
 void CustomLookAndFeel::drawTickBox (juce::Graphics& g, juce::Component& component,
                                      float x, float y, float w, float h,
                                      const bool ticked,
-                                     [[maybe_unused]] const bool isEnabled,
-                                     [[maybe_unused]] const bool shouldDrawButtonAsHighlighted,
-                                     [[maybe_unused]] const bool shouldDrawButtonAsDown)
+                                     const bool /* isEnabled */,
+                                     const bool shouldDrawButtonAsHighlighted,
+                                     const bool /* shouldDrawButtonAsDown */)
 {
     juce::Rectangle<float> tickBounds (x, y, w, h);
 
@@ -72,7 +72,7 @@ void CustomLookAndFeel::drawLinearSlider (juce::Graphics& g, int x, int y, int w
                                           const juce::Slider::SliderStyle style, juce::Slider& slider)
 {
     if (slider.isBar() || slider.isVertical() || style == juce::Slider::SliderStyle::ThreeValueHorizontal) {
-        g.drawFittedText("No LnF Found", juce::Rectangle<int>(x, y, width, height), juce::Justification::centred, 2);
+        jassertfalse;
         return;
     }
 

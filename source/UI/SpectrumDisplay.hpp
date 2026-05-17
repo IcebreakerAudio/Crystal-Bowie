@@ -20,8 +20,11 @@ public:
         display.setBounds(getLocalBounds());
     }
 
-    juce::Path& getPath() { return display.path; }
-    void update() { display.repaint(); }
+    void updatePath(const juce::Path& newPath)
+    {
+        display.path = newPath;
+        display.repaint();
+    }
 
     void setRange(const juce::NormalisableRange<float>& range)
     {
@@ -48,27 +51,16 @@ private:
             if(rangeSet)
             {
                 g.setColour(juce::Colours::lightgrey.withAlpha(0.33f));
-                for(auto f = freqRange.start; f < 100.0f; f += 10.0f)
-                {
-                    auto proportion = freqRange.convertTo0to1(f);
-                    auto x = proportion * width;
 
-                    g.fillRect(x - 0.5f, 0.0f, 1.0f, height);
-                }
-                for(auto f = 100.0f; f < 1000.0f; f += 100.0f)
-                {
-                    auto proportion = freqRange.convertTo0to1(f);
-                    auto x = proportion * width;
-
-                    g.fillRect(x - 0.5f, 0.0f, 1.0f, height);
-                }
-                for(auto f = 1000.0f; f < freqRange.end; f += 1000.0f)
-                {
-                    auto proportion = freqRange.convertTo0to1(f);
-                    auto x = proportion * width;
-
-                    g.fillRect(x - 0.5f, 0.0f, 1.0f, height);
-                }
+                auto drawGridLines = [&](float from, float to, float step) {
+                    for (auto f = from; f < to; f += step) {
+                        auto x = freqRange.convertTo0to1(f) * width;
+                        g.fillRect(x - 0.5f, 0.0f, 1.0f, height);
+                    }
+                };
+                drawGridLines(freqRange.start, 100.0f,        10.0f);
+                drawGridLines(100.0f,          1000.0f,       100.0f);
+                drawGridLines(1000.0f,         freqRange.end, 1000.0f);
             }
 
             g.setColour(juce::Colours::lightgrey);

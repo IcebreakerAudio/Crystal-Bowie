@@ -24,7 +24,5 @@ private:
     juce::ParameterAttachment minAttachment, maxAttachment;
 
     bool ignoreCallbacks = false;
-
-    int thumbBeingDragged = -1;
 };
 

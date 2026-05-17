@@ -212,13 +212,6 @@ void SpectrumAnalyser::createLinePath (juce::Path& p, const juce::Rectangle<floa
     );
 }
 
-void SpectrumAnalyser::createBarPath (juce::Path& p, const juce::Rectangle<float> bounds)
-{
-    // To Do - create variation that uses bars instead of graph
-    juce::ignoreUnused(p);
-    juce::ignoreUnused(bounds);
-}
-
 void SpectrumAnalyser::setFreqRange(float minimumFreq, float maximumFreq, int resolution, bool useLogScale)
 {
     outputData.resize(resolution);

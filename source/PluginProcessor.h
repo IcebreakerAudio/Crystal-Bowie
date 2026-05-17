@@ -6,6 +6,20 @@
 #include "ProcessingModule.hpp"
 #include "Utilities/SpectrumAnalyser.hpp"
 
+namespace ParameterIDs {
+    inline constexpr const char* drive     = "drive";
+    inline constexpr const char* sym       = "sym";
+    inline constexpr const char* mix       = "mix";
+    inline constexpr const char* outGain   = "outGain";
+    inline constexpr const char* modePos   = "modePos";
+    inline constexpr const char* modeNeg   = "modeNeg";
+    inline constexpr const char* xOverLow  = "xOverLow";
+    inline constexpr const char* xOverHigh = "xOverHigh";
+    inline constexpr const char* active    = "active";
+    inline constexpr const char* filter    = "filter";
+    inline constexpr const char* OS        = "OS";
+}
+
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
 {

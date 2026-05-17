@@ -27,7 +27,6 @@ public:
     void run() override;
 
     void createLinePath (juce::Path& p, const juce::Rectangle<float> bounds);
-    void createBarPath (juce::Path& p, const juce::Rectangle<float> bounds);
 
     void setFreqRange(float minimumFreq, float maximumFreq, int resolution, bool useLogScale = true);
     void setDecibelRange(float min, float max);
