@@ -1,0 +1,74 @@
+CRYSTAL BOWIE SOFTWARE LICENSE AGREEMENT
+
+1. CONDITIONS AND ACCEPTANCE OF LICENSE
+
+Icebreaker Audio licenses the Crystal Bowie Plug-In (the "Software") to you only upon the condition that
+you accept all of the terms contained in this Agreement. Please read the terms carefully before
+continuing installation. Completing the installation will indicate your full agreement to them. If you
+do not agree to these terms, press the "CANCEL" button to exit the installation process.
+
+2. WARRANTY
+
+The Software is the property of Icebreaker Audio and is protected by copyright and other laws. The
+Software is provided "as is", without warranty of any kind, either expressed or implied, including,
+without limitation, warranties of merchantability or fitness for use for any particular purpose,
+continuous operation, and/or non-infringement. By installing the Software, you agree to accept all risks
+arising from its use or misuse.
+
+3. LICENSEE'S RIGHTS AND OBLIGATIONS
+
+You will be granted certain rights to use the Software upon acceptance of this license. Your rights and
+obligations are as follows:
+
+YOU MAY:
+
+(i). Use the Software, free of charge, on any number of computers, for personal or commercial audio
+production.
+
+YOU MAY NOT:
+
+(i). Make any copies of the Software, except for personal backup purposes.
+
+(ii). Transfer, distribute, modify or translate the Software, or any portion thereof.
+
+(iii). Assign this Agreement or the rights granted to you hereunder.
+
+(iv). Disassemble, decompile, or otherwise reverse engineer the Software or any of its data in any way,
+shape, or form.
+
+Violations of any of the preceding restrictions may result in revocation of this license without
+notification or compensation.
+
+The Software is owned by Icebreaker Audio, and is protected by UK and international copyright laws.
+
+4. LIMITATION OF LIABILITY
+
+A. The Software may not be free of bugs or errors.
+
+B. We are not liable for any damage caused by this software. Back up your data files regularly!
+
+C. IN NO EVENT WILL WE BE LIABLE FOR ANY SPECIAL, INDIRECT, CONSEQUENTIAL, OR PUNITIVE DAMAGES INCLUDING
+LOST PROFITS, LOST DATA, OR LOST BUSINESS OPPORTUNITY ARISING OUT OF ANY SOFTWARE DEFECT OR MALFUNCTION OR
+THE INABILITY TO USE THIS SOFTWARE!
+
+D. TO THE FULLEST EXTENT PERMITTED UNDER THE LAW, WE SHALL HAVE NO LIABILITY WHATSOEVER ARISING FROM YOUR
+USE OF THE SOFTWARE.
+
+5. JURISDICTION AND DISPUTES
+
+A. This License Agreement shall be governed by the laws of England and Wales without regard to principles
+of conflicts of laws.
+
+B. Any disputes relating hereto shall be adjudicated in the courts of England and Wales, and you hereby
+consent to the exclusive jurisdiction of said courts. If for any reason a court of competent jurisdiction
+finds any provision of this License Agreement, or portion thereof, to be unenforceable, that provision of
+the License Agreement shall be enforced to the maximum extent permissible so as to effect the intent of
+the parties, and the remainder of this License Agreement shall continue in full force and effect.
+
+6. INTEGRATION
+
+This is the complete and exclusive agreement between the parties in connection with the subject matter of
+the Agreement.
+
+BY INSTALLING THE SOFTWARE YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO
+BE FULLY LEGALLY BOUND BY ITS TERMS AND CONDITIONS.

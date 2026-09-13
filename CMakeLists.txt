@@ -121,3 +121,16 @@ target_link_libraries(SharedCode
 
 # Link the JUCE plugin targets our SharedCode target
 target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)
+
+# Expand PRODUCT_NAME/COMPANY_NAME/BUNDLE_ID and PROJECT_VERSION above into files the installer scripts
+# under Installer/ read directly, so neither script hand-maintains its own copy of these values.
+configure_file(
+        "${CMAKE_SOURCE_DIR}/Installer/ProductInfo.iss.in"
+        "${CMAKE_BINARY_DIR}/Installer/ProductInfo.iss"
+        @ONLY
+)
+configure_file(
+        "${CMAKE_SOURCE_DIR}/Installer/ProductInfo.sh.in"
+        "${CMAKE_BINARY_DIR}/Installer/ProductInfo.sh"
+        @ONLY
+)
